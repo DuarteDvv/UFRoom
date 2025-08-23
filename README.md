@@ -2,7 +2,7 @@
 
 ## Objetivos e Principais Features
 
-O nosso objetivo é a construção de uma plataforma de anúncios de aluguel focado em estudantes, restrito a repúblicas e kitnets.
+Nosso objetivo é a construção de uma plataforma de anúncios de aluguel focado em estudantes, restrito a repúblicas e kitnets.
 
 Funcionalidades no escopo do anunciante: 
 - Cadastro e autenticação
@@ -20,7 +20,7 @@ Funcionalidades no escopo do usuário que busca uma acomodação:
 
 *   Gustavo Paiva: Backend, Product Owner
 *   Luis Sousa: Backend, Arquiteto de Banco de Dados
-*   Luiz Costa: Frontend
+*   Luiz Costa: Frontend, Designer
 *   Marcus Oliveira: Fullstack, Scrum Master
 
 ## Pilha de Tecnologias
