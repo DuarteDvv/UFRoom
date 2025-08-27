@@ -7,7 +7,7 @@ services:
     environment:
       POSTGRES_USER: ufroomUser
       POSTGRES_PASSWORD: ufroompassword
-      POSTGRES_DB: ufroom
+      POSTGRES_DB: ufroomdb
     ports:
       - "5433:5432"
     volumes:
