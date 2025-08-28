@@ -37,4 +37,5 @@ CREATE TABLE announcement (
     sex VARCHAR(20), -- could be ENUM later if desired
     created_at DATE,
     university VARCHAR(255)
+    rules VARCHAR(255)
 );
