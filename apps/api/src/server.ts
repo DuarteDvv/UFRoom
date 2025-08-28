@@ -1,11 +1,13 @@
 import Fastify from 'fastify'
 import health from './routes/health'
 import announcement from './routes/announcement'
+import prismaPlugin from './plugins/prisma'
 
 const fastify = Fastify({
   logger: true
 })
 
+fastify.register(prismaPlugin)
 fastify.register(announcement)
 fastify.register(health)
 
