@@ -5,6 +5,8 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 
+import addressRoutes from './routes/address'
+
 // Tipos
 interface ServerOptions {
   port?: number
@@ -36,16 +38,25 @@ async function createServer(options: ServerOptions = {}) {
   // CORS
   await server.register(cors, {
     origin: (origin, callback) => {
-      const hostname = new URL(origin || '').hostname
-      if (!origin || hostname === 'localhost' || hostname === '127.0.0.1') {
+      if (!origin) {
         callback(null, true)
         return
       }
-      // Em produção, adicione seus domínios permitidos
-      callback(new Error("Not allowed"), false)
+
+      try {
+        const hostname = new URL(origin).hostname
+        if (hostname === 'localhost' || hostname === '127.0.0.1') {
+          callback(null, true)
+        } else {
+          callback(new Error("Not allowed"), false)
+        }
+      } catch {
+        callback(new Error("Invalid origin"), false)
+      }
     },
     credentials: true
   })
+
 
   // Rate limiting
   await server.register(rateLimit, {
@@ -62,33 +73,8 @@ async function createServer(options: ServerOptions = {}) {
     }
   })
 
-  // Registrar rotas
-  await server.register(async function (server) {
-    // Rota de exemplo
-    server.get('/api/users', async () => {
-      return [
-        { id: 1, name: 'João', email: 'joao@ufroom.com' },
-        { id: 2, name: 'Maria', email: 'maria@ufroom.com' }
-      ]
-    })
-
-    // Rota com parâmetros
-    server.get<{ Params: { id: string } }>('/api/users/:id', async (request) => {
-      const { id } = request.params
-      return { id: Number(id), name: `User ${id}`, email: `user${id}@ufroom.com` }
-    })
-
-    // Rota POST de exemplo
-    server.post<{ Body: { name: string; email: string } }>('/api/users', async (request) => {
-      const { name, email } = request.body
-      return { 
-        id: Date.now(), 
-        name, 
-        email, 
-        created_at: new Date().toISOString() 
-      }
-    })
-  })
+  // Registrando rotas de endereço
+  await server.register(addressRoutes)
 
   return server
 }
