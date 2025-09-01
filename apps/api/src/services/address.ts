@@ -1,12 +1,12 @@
-import { prisma } from "../prisma";
+import { FastifyInstance } from "fastify";
 import { AddressType } from "../schemas/address";
 
-export async function createAddress(data: AddressType) {
-  return prisma.address.create({
+export async function createAddress(server: FastifyInstance, data: AddressType) {
+  return server.prisma.address.create({
     data,
   });
 }
 
-export async function getAddresses() {
-  return prisma.address.findMany();
+export async function getAddresses(server: FastifyInstance) {
+  return server.prisma.address.findMany();
 }

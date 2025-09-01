@@ -4,6 +4,7 @@ import Fastify, { FastifyInstance } from 'fastify'
 import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
+import prismaPlugin from './plugins/prisma' 
 
 import addressRoutes from './routes/address'
 
@@ -72,6 +73,9 @@ async function createServer(options: ServerOptions = {}) {
       uptime: process.uptime()
     }
   })
+  
+  // Registrando o plugin do Prisma
+  await server.register(prismaPlugin)
 
   // Registrando rotas de endereço
   await server.register(addressRoutes)
