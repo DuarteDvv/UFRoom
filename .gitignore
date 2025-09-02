@@ -89,3 +89,4 @@ temp/
 # Docker
 .dockerignore
 Dockerfile*
+/generated/prisma
