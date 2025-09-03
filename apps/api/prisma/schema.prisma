@@ -34,8 +34,9 @@ model owner {
   name         String         @db.VarChar(255)
   cpf          String         @unique @db.Char(11)
   entry_at     DateTime?      @db.Date
-  phone_number String?        @db.VarChar(20)
-  img_url      String         @db.VarChar(255)
+  updated_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  phone        String?        @db.VarChar(30)
+  img_url      String?        @db.VarChar(255)
   announcement announcement[]
   address      address?       @relation(fields: [id_address], references: [id], onUpdate: NoAction)
 
@@ -43,39 +44,87 @@ model owner {
 }
 
 model announcement {
-  id               Int                @id @default(autoincrement())
-  id_owner         Int?
-  id_address       Int?
-  price            Decimal            @db.Decimal(12, 2)
-  vacancies        Int?
-  max_people       Int?
-  description      String?
-  title            String             @db.VarChar(255)
-  sex              sex_enum?
-  created_at       DateTime?          @default(now()) @db.Timestamp(6)
-  university       String?            @db.VarChar(255)
-  rules            String?            @db.VarChar(255)
-  address          address?           @relation(fields: [id_address], references: [id], onUpdate: NoAction)
-  owner            owner?             @relation(fields: [id_owner], references: [id], onDelete: Cascade, onUpdate: NoAction)
-  announcement_img announcement_img[]
+  id                      Int                       @id @default(autoincrement())
+  id_owner                Int
+  id_address              Int?
+  price                   Decimal                   @db.Decimal(12, 2)
+  occupants               Int?                      @default(0)
+  max_occupants           Int?
+  description             String?
+  type_of                 property_type?
+  status                  announcement_status?      @default(available)
+  title                   String                    @db.VarChar(255)
+  sex_restriction         sex_restrict?             @default(both)
+  created_at              DateTime?                 @default(now()) @db.Timestamptz(6)
+  updated_at              DateTime?                 @default(now()) @db.Timestamptz(6)
+  rules                   String?
+  address                 address?                  @relation(fields: [id_address], references: [id], onUpdate: NoAction)
+  owner                   owner                     @relation(fields: [id_owner], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  announcement_img        announcement_img[]
+  announcement_university announcement_university[]
 
   @@index([id_owner], map: "idx_announcement_owner")
   @@index([price], map: "idx_announcement_price")
-  @@index([sex], map: "idx_announcement_sex")
-  @@index([university], map: "idx_announcement_university")
+  @@index([sex_restriction], map: "idx_announcement_sex")
+  @@index([status], map: "idx_announcement_status")
+  @@index([type_of], map: "idx_announcement_type")
 }
 
 model announcement_img {
-  id              Int           @id @default(autoincrement())
-  id_announcement Int?
-  img_url         String        @db.VarChar(255)
-  announcement    announcement? @relation(fields: [id_announcement], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  id              Int          @id @default(autoincrement())
+  id_announcement Int
+  img_url         String       @db.VarChar(255)
+  entry_at        DateTime?    @default(now()) @db.Timestamptz(6)
+  order_idx       Int?         @default(0)
+  is_cover        Boolean?     @default(false)
+  announcement    announcement @relation(fields: [id_announcement], references: [id], onDelete: Cascade, onUpdate: NoAction)
 
+  @@unique([id_announcement, img_url])
   @@index([id_announcement], map: "idx_announcement_img_announcement")
 }
 
-enum sex_enum {
+model announcement_university {
+  id              Int          @id @default(autoincrement())
+  id_announcement Int
+  id_university   Int
+  distance        Float?
+  announcement    announcement @relation(fields: [id_announcement], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  university      university   @relation(fields: [id_university], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([id_announcement, id_university])
+  @@index([id_announcement], map: "idx_announcement_university_announcement")
+  @@index([id_university], map: "idx_announcement_university_university")
+}
+
+model university {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(255)
+  abbreviation            String?                   @db.VarChar(50)
+  latitude                Decimal?                  @db.Decimal(9, 6)
+  longitude               Decimal?                  @db.Decimal(9, 6)
+  announcement_university announcement_university[]
+
+  @@index([latitude, longitude], map: "idx_university_coordinates")
+  @@index([name], map: "idx_university_name")
+}
+
+enum announcement_status {
+  paused
+  rented
+  liberation
+  full
+  available
+}
+
+enum property_type {
+  kitnet
+  individual_room
+  republic
+  shared_room
+}
+
+enum sex_restrict {
   male
   female
-  other
+  both
 }
