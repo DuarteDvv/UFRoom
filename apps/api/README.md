@@ -1,11 +1,18 @@
-#### Listar todos os containers 
+## Install and update NODE.JS
+
+sudo apt install curl
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
+- Close and open terminal
+nvm node install
+
+#### Listar todos os containers (ligados ou não)
 
 docker ps -a
 
 #### Subir banco de dados
 
 ```bash
-docker compose up -d
+docker compose up postgres -d
 ```
 
 #### Desligar banco de dados (sem apagar dados)
