@@ -7,6 +7,8 @@ import rateLimit from '@fastify/rate-limit'
 import prismaPlugin from './plugins/prisma' 
 
 import addressRoutes from './routes/address'
+import authRoutes from './routes/auth'
+
 
 // Tipos
 interface ServerOptions {
@@ -79,6 +81,7 @@ async function createServer(options: ServerOptions = {}) {
 
   // Registrando rotas de endereço
   await server.register(addressRoutes)
+  await server.register(authRoutes) 
 
   return server
 }

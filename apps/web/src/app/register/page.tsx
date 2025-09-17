@@ -61,7 +61,7 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => { // <- async aqui
     e.preventDefault();
 
     if (form.password !== form.confirmPassword) {
@@ -69,8 +69,39 @@ export default function SignUpPage() {
       return;
     }
 
-    console.log("Data submitted:", form);
+    try {
+      const payload = {
+        name: form.name,
+        email: form.email,
+        cpf: form.cpf,
+        phone: form.phone,
+        password: form.password,
+      };
+
+      const res = await fetch("http://localhost:3001/auth/register", { 
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        alert("Erro ao cadastrar: " + (errorData.error || "Tente novamente"));
+        return;
+      }
+
+      const data = await res.json();
+      alert("Cadastro realizado com sucesso!");
+      console.log(data);
+    } catch (err) {
+      console.error(err);
+      alert("Erro na requisição");
+    }
   };
+
+
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
