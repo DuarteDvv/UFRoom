@@ -9,6 +9,7 @@ import fastifySensible from "fastify-sensible";
 
 import addressRoutes from './routes/address'
 import authRoutes from './routes/auth'
+import ownerRoutes from './routes/owner'
 
 
 // Tipos
@@ -84,7 +85,8 @@ async function createServer(options: ServerOptions = {}) {
 
   // Registrando rotas de endereço
   await server.register(addressRoutes)
-  await server.register(authRoutes) 
+  await server.register(authRoutes)
+  await server.register(ownerRoutes) 
 
   return server
 }
