@@ -20,7 +20,6 @@ model address {
   longitude    Decimal?       @db.Decimal(9, 6)
   complement   String?        @db.VarChar(255)
   announcement announcement[]
-  owner        owner[]
 
   @@index([cep], map: "idx_address_cep")
   @@index([city], map: "idx_address_city")
@@ -39,10 +38,6 @@ model owner {
   phone        String?        @db.VarChar(30)
   img_url      String?        @db.VarChar(255)
   announcement announcement[]
-  password     String         @db.VarChar(255)
-
-
-  @@index([id_address], map: "idx_owner_address")
 }
 
 model announcement {
