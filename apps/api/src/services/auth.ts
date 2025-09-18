@@ -1,5 +1,5 @@
 import { FastifyInstance } from "fastify";
-import { RegisterType } from "../schemas/auth";
+import { RegisterType, LoginType } from "../schemas/auth";
 import bcrypt from "bcryptjs";
 
 export async function register(server: FastifyInstance, data: RegisterType) {
@@ -8,6 +8,7 @@ export async function register(server: FastifyInstance, data: RegisterType) {
   const existingEmail = await server.prisma.owner.findUnique({
     where: { email },
   });
+
   if (existingEmail) {
     throw new Error("E-mail já cadastrado");
   }
@@ -15,6 +16,7 @@ export async function register(server: FastifyInstance, data: RegisterType) {
   const existingCPF = await server.prisma.owner.findUnique({
     where: { cpf },
   });
+
   if (existingCPF) {
     throw new Error("CPF já cadastrado");
   }
@@ -31,5 +33,25 @@ export async function register(server: FastifyInstance, data: RegisterType) {
       password: hashedPassword,
     },
   });
+
   return newUser;
+}
+
+export async function login(server: FastifyInstance, data: LoginType) {
+  const { email, password } = data;
+
+  const user = await server.prisma.owner.findUnique({
+    where: { email },
+  });
+
+  if (!user) {
+    throw new Error("E-mail ou senha inválidos");
+  }
+
+  const isPasswordValid = await bcrypt.compare(password, user.password);
+  if (!isPasswordValid) {
+    throw new Error("E-mail ou senha inválidos");
+  }
+
+
 }

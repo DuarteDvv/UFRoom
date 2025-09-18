@@ -2,7 +2,7 @@ import { Type, Static } from '@sinclair/typebox'
 
 export const Owner = Type.Object({
   id: Type.Optional(Type.Number()), 
-  id_address: Type.Number(),
+  email: Type.String({ format: 'email', maxLength: 255 }),
   name: Type.String({ maxLength: 255 }),
   cpf: Type.String({ maxLength: 14 }),
   entry_at: Type.Optional(Type.String({ format: 'date' })), 
