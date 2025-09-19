@@ -1,6 +1,6 @@
 import { FastifyInstance } from "fastify";
-import { register } from "../controllers/auth";
-import { RegisterSchema } from "../schemas/auth";
+import { register, login } from "../controllers/auth";
+import { RegisterSchema, LoginSchema } from "../schemas/auth";
 
 export default async function authRoutes(fastify: FastifyInstance) {
   fastify.post(
@@ -11,5 +11,15 @@ export default async function authRoutes(fastify: FastifyInstance) {
       },
     },
     register
+  );
+
+  fastify.post(
+    "/auth/login",
+    {
+      schema: {
+        body: LoginSchema,
+      },
+    },
+    login
   );
 }

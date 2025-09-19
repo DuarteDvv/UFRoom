@@ -5,6 +5,7 @@ import cors from '@fastify/cors'
 import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import prismaPlugin from './plugins/prisma' 
+import jwtPlugin from './plugins/jwt'
 import fastifySensible from "fastify-sensible";
 
 import addressRoutes from './routes/address'
@@ -80,6 +81,9 @@ async function createServer(options: ServerOptions = {}) {
   
   // Registrando o plugin do Prisma
   await server.register(prismaPlugin)
+
+  // Registrando o plugin JWT
+  await server.register(jwtPlugin)
 
   await server.register(fastifySensible)
 
