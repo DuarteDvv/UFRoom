@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 // useRouter permite navegação programática entre páginas.
 import { useState } from "react"; 
@@ -10,9 +11,13 @@ import { useState } from "react";
 import Image from "next/image";
 // Componente de imagem do Next.js, otimizado para performance.
 
+import { useAuth } from "../../global-contexts/authcontext";
+
 
 
 export default function LoginPage() {
+
+    const { login } = useAuth();
 
     const router = useRouter();
 
@@ -21,6 +26,8 @@ export default function LoginPage() {
         password: "",
     });
 
+    const [errorMessage, setErrorMessage] = useState(""); // Estado para a mensagem de erro
+
     const [showPassword, setShowPassword] = useState(false); //Estado para mostrar/ocultar senha
 
 
@@ -28,6 +35,8 @@ export default function LoginPage() {
         const { name, value } = e.target; //Desestruturação do evento de mudança (change event)
         setForm({ ...form, [name]: value }); //Atualiza o estado com o novo valor do campo alterado
     }
+
+    const isFormValid = form.email.includes("@") && form.password.length >= 6;
        
     const handleSubmit = async (e: React.FormEvent) => { 
         e.preventDefault();
@@ -48,12 +57,28 @@ export default function LoginPage() {
 
             if (!res.ok) {
                 const errorData = await res.json();
-                alert("Erro ao efetuar login: " + (errorData.error || "Tente novamente"));
+
+                if (res.status === 401) {
+                    setErrorMessage("E-mail ou senha inválidos");
+                }
+
+                if (res.status === 500) {
+                    setErrorMessage("Erro no servidor. Tente novamente mais tarde.");
+                }
+
+                if (res.status === 400) {
+                    setErrorMessage("Email com formato inválido ou senha com menos de 6 caracteres.");
+                }
+
                 return;
             }
 
             const data = await res.json();
-            alert("Login realizado com sucesso!");
+
+            setErrorMessage(""); // Limpa a mensagem de erro em caso de sucesso
+
+            await login( data.user, data.access_token );
+            router.push("/me");
             console.log(data);
         } 
         catch (err) {
@@ -74,6 +99,8 @@ export default function LoginPage() {
                 <h1 className="text-2xl font-bold text-center mb-4 text-gray-800">
                     Login
                 </h1>
+
+
 
                 <form onSubmit={handleSubmit} className="space-y-6">
 
@@ -115,12 +142,26 @@ export default function LoginPage() {
                         </button>
                     </div>
 
+                    {/* Botão de submit que só é habilitado se o formulário for válido */}
+
                     <button
-                            type="submit"
-                            className="w-full bg-red-600 text-white font-semibold p-3 rounded-lg hover:bg-red-700 transition"
-                        > Entrar 
+                        type="submit"
+                        className={`w-full bg-red-600 text-white font-semibold p-3 rounded-lg transition hover:bg-red-700
+                        ${!isFormValid ? "bg-gray-400 cursor-not-allowed opacity-80" : ""}`}
+                        disabled={!isFormValid}
+                    >
+                        Entrar
                     </button>
 
+                    {/* Exibir mensagem de erro se existir */}
+                    {errorMessage && (
+                        <div className="text-yellow-600 text-sm text-center mt-0">
+                            {errorMessage}
+                        </div>
+                    )}
+
+
+                    {/* Link para página de recuperação de senha */}
                     <div className="mt-4 text-center">
                         <button
                             type="button"

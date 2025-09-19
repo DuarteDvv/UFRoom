@@ -25,11 +25,16 @@ export async function login(
   try {
     const user = await AuthService.login(req.server, req.body);
     return reply.code(200).send({ message: "Login realizado com sucesso", user });
+
   } catch (error: any) {
+
     req.log.error(error, "Error logging in user");
+    
     if (error.message === "E-mail ou senha inválidos") {
       return reply.code(401).send({ error: error.message });
     }
-    return reply.code(500).send({ error: "Internal server error" });
+    else{
+      return reply.code(500).send({ error: "Internal server error" });
+    }
   }
 }

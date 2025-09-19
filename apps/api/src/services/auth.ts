@@ -26,11 +26,11 @@ export async function register(server: FastifyInstance, data: RegisterType) {
 
   const newUser = await server.prisma.owner.create({
     data: {
-      name,
-      email,
+      name: name,
+      email: email,
       cpf: cleanCPF,
-      phone,
-      password: hashedPassword,
+      phone: phone,
+      password: hashedPassword
     },
   });
 
@@ -48,10 +48,17 @@ export async function login(server: FastifyInstance, data: LoginType) {
     throw new Error("E-mail ou senha inválidos");
   }
 
-  const isPasswordValid = await bcrypt.compare(password, user.password);
+  const isPasswordValid = bcrypt.compare(password, user.password);
   if (!isPasswordValid) {
     throw new Error("E-mail ou senha inválidos");
   }
 
 
+  // Gerar o token JWT e retornar para o frontend
+  const token = server.jwt.sign({ sub: user.id, email: user.email });
+  return { 
+    access_token: token, 
+    token_type: "bearer",
+    user: { id: user.id, name: user.name, email: user.email }
+  };
 }

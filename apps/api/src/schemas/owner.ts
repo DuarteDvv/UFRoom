@@ -8,7 +8,7 @@ export const Owner = Type.Object({
   entry_at: Type.Optional(Type.String({ format: 'date' })), 
   phone_number: Type.Optional(Type.String({ maxLength: 20 })),
   img_url: Type.Optional(Type.String({ format: 'uri' })),
-  password: Type.String({ minLength: 6, maxLength: 255 })
+  password: Type.String({ minLength: 6, maxLength: 60 })
 })
 
 export type OwnerType = Static<typeof Owner>

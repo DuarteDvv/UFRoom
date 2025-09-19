@@ -29,14 +29,13 @@ CREATE TABLE owner (
   id SERIAL PRIMARY KEY,
   name VARCHAR(255) NOT NULL,
   cpf CHAR(11) UNIQUE NOT NULL,
-  entry_at DATE,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  entry_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT now(),
   phone VARCHAR(30),
   img_url VARCHAR(255),
-  password VARCHAR(255),
+  password VARCHAR(255)
 );
-
-CREATE INDEX idx_owner_address ON owner(id_address);
 
 
 -- tabela: announcement
