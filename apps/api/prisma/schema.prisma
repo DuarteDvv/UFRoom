@@ -20,7 +20,6 @@ model address {
   longitude    Decimal?       @db.Decimal(9, 6)
   complement   String?        @db.VarChar(255)
   announcement announcement[]
-  owner        owner[]
 
   @@index([cep], map: "idx_address_cep")
   @@index([city], map: "idx_address_city")
@@ -28,21 +27,7 @@ model address {
   @@index([state], map: "idx_address_state")
 }
 
-model owner {
-  id           Int            @id @default(autoincrement())
-  id_address   Int?
-  name         String         @db.VarChar(255)
-  cpf          String         @unique @db.Char(11)
-  entry_at     DateTime?      @db.Date
-  updated_at   DateTime?      @default(now()) @db.Timestamptz(6)
-  phone        String?        @db.VarChar(30)
-  img_url      String?        @db.VarChar(255)
-  announcement announcement[]
-  address      address?       @relation(fields: [id_address], references: [id], onUpdate: NoAction)
-
-  @@index([id_address], map: "idx_owner_address")
-}
-
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model announcement {
   id                      Int                       @id @default(autoincrement())
   id_owner                Int
@@ -94,6 +79,19 @@ model announcement_university {
   @@unique([id_announcement, id_university])
   @@index([id_announcement], map: "idx_announcement_university_announcement")
   @@index([id_university], map: "idx_announcement_university_university")
+}
+
+model owner {
+  id           Int            @id @default(autoincrement())
+  name         String         @db.VarChar(255)
+  cpf          String         @unique @db.Char(11)
+  email        String         @unique @db.VarChar(255)
+  entry_at     DateTime?      @db.Date
+  updated_at   DateTime?      @default(now()) @db.Timestamptz(6)
+  phone        String?        @db.VarChar(30)
+  img_url      String?        @db.VarChar(255)
+  password     String?        @db.VarChar(255)
+  announcement announcement[]
 }
 
 model university {
