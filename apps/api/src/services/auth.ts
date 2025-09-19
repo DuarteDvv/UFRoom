@@ -58,9 +58,15 @@ export async function login(server: FastifyInstance, data: LoginType) {
 
   // Gerar o token JWT e retornar para o frontend
   const token = server.jwt.sign({ sub: user.id, email: user.email });
-  return { 
-    access_token: token, 
-    token_type: "bearer",
-    user: { id: user.id, name: user.name, email: user.email }
+
+  return {
+    access_token: token,
+    token_type: "Bearer",
+    user: {
+      id: user.id,
+      name: user.name,
+      email: user.email
+    }
   };
+  
 }

@@ -73,12 +73,14 @@ export default function LoginPage() {
                 return;
             }
 
-            const data = await res.json();
+            const responsebody = await res.json();
+
+            const data = responsebody.data;
 
             setErrorMessage(""); // Limpa a mensagem de erro em caso de sucesso
 
-            await login( data.user, data.access_token );
-            router.push("/me");
+            await login(data.user, data.access_token );
+            router.push("/search");
             console.log(data);
         } 
         catch (err) {

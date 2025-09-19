@@ -24,8 +24,8 @@ export async function login(
   reply: FastifyReply
 ) {
   try {
-    const user = await AuthService.login(req.server, req.body);
-    return reply.code(200).send({ message: "Login realizado com sucesso", user });
+    const data = await AuthService.login(req.server, req.body);
+    return reply.code(200).send({ message: "Login realizado com sucesso", data });
 
   } catch (error: any) {
 
