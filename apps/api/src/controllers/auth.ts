@@ -9,7 +9,8 @@ export async function register(
   try {
     const newUser = await AuthService.register(req.server, req.body);
     return reply.code(201).send({ message: "Usuário cadastrado com sucesso", user: newUser });
-  } catch (error: any) {
+  } 
+  catch (error: any) {
     req.log.error(error, "Error registering user");
     if (error.message === "E-mail já cadastrado" || error.message === "CPF já cadastrado") {
       return reply.code(400).send({ error: error.message });

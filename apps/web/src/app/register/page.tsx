@@ -17,6 +17,9 @@ export default function SignUpPage() {
     confirmPassword: "",
   });
   const [step, setStep] = useState(1);
+  const [error, setError] = useState("");
+
+  const isFormValid = form.email.includes("@") && form.password.length >= 6;
 
   const formatCPF = (value: string) => {
     const numbers = value.replace(/\D/g, "");
@@ -94,13 +97,31 @@ export default function SignUpPage() {
       });
       if (!res.ok) {
         const errorData = await res.json();
-        alert("Erro ao cadastrar: " + (errorData.error || "Tente novamente"));
+
+        if (res.status === 400 ) {
+
+          if (errorData.message === "body/name must NOT have fewer than 3 characters") {
+            setError("O nome deve ter pelo menos 3 caracteres.");
+          } 
+          else{
+            setError(errorData.error);
+          }
+          
+        }
+
+        if (res.status === 500) {
+          setError("Erro no servidor. Tente novamente mais tarde.");
+        }
+        
         return;
       }
       const data = await res.json();
+      setError(""); // Limpa a mensagem de erro em caso de sucesso
+      alert("Usuário cadastrado com sucesso! Faça login para continuar.");
       router.push("/login");
       console.log(data);
-    } catch (err) {
+    } 
+    catch (err) {
       console.error(err);
       alert("Erro na requisição");
     }
@@ -193,11 +214,19 @@ export default function SignUpPage() {
                 </button>
                 <button
                   type="submit"
-                  className="w-full bg-red-600 text-white font-semibold p-3 rounded-lg hover:bg-red-700 transition"
+                  className={`w-full bg-red-600 text-white font-semibold p-3 rounded-lg transition hover:bg-red-700
+                        ${!isFormValid ? "bg-gray-400 cursor-not-allowed opacity-80" : ""}`}
+                  disabled={!isFormValid}
                 >
+
                   Cadastrar
                 </button>
               </div>
+              {error && (
+                        <div className="text-yellow-600 text-sm text-center mt-0">
+                            {error}
+                        </div>
+                    )}
             </>
           )}
         </form>

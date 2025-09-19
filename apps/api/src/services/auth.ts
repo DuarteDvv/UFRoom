@@ -13,8 +13,10 @@ export async function register(server: FastifyInstance, data: RegisterType) {
     throw new Error("E-mail já cadastrado");
   }
 
+  const cleanCPF = cpf.replace(/\D/g, '');
+
   const existingCPF = await server.prisma.owner.findUnique({
-    where: { cpf },
+    where: { cpf: cleanCPF },
   });
 
   if (existingCPF) {
@@ -22,7 +24,7 @@ export async function register(server: FastifyInstance, data: RegisterType) {
   }
 
   const hashedPassword = await bcrypt.hash(password, 10);
-  const cleanCPF = cpf.replace(/\D/g, '');
+  
 
   const newUser = await server.prisma.owner.create({
     data: {
