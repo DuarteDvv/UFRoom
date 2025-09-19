@@ -110,7 +110,7 @@ export default function SignUpPage() {
     <div className="flex items-center justify-center min-h-screen bg-gray-100">
       <div className="w-full max-w-md bg-white p-8 rounded-3xl shadow-xl">
         <div className="flex justify-center mb-6">
-          <Image src="/logo.png" alt="Logo" width={120} height={120} />
+          <Image src="/logo.png" alt="Logo" width={200} height={80} />
         </div>
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Criar Conta
