@@ -3,79 +3,106 @@
 import { useState } from "react";
 import Image from "next/image";
 import Header from '../../components/Header';
-import { useAuth } from "../../global-contexts/authcontext";
 
-type Room = {
+const PAGE_SIZE = 10;
+
+type AnnounceSnippet = {
   id: number;
   title: string;
-  description: string;
   price: string;
   type: string;
-  beds: number;
-  baths: number;
-  size: string;
-  image?: string;
-  tag?: string;
+  status?: string;
+  image: string;
+  lotation?: string; // <ocuppants / maxOccupants>
+  nearbyUniversities?: string[];
 };
 
 export default function RoomListPage() {
-  const [search, setSearch] = useState("");
 
-  const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    // Implemente a lógica de busca aqui
-    console.log("Search query:", search);
-  };
+  const [query, setQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [announcements, setAnnouncements] = useState<AnnounceSnippet[]>([]);
   const [filters, setFilters] = useState({
-    minPrice: "",
     maxPrice: "",
-    bedrooms: "",
+    currentPeople: "",
     propertyType: "",
+    announcementStatus: "",
+    sexRestriction: "",
+    nearbyUniversities: "",
     location: "",
-    amenities: "",
   });
 
-  const rooms: Room[] = [
+  const handleSearchOrFilter = async () => {
+    const res = await fetch('/api/search', {
+      method: 'POST',
+      body: JSON.stringify({ query: query, filters: filters, page: currentPage, pageSize: PAGE_SIZE }),
+      headers: { 'Content-Type': 'application/json' }
+    });
+
+    const data = await res.json();
+    setAnnouncements(data);
+  };
+  
+
+  const rooms: AnnounceSnippet[] = [
     {
       id: 1,
       title: "Studio • 10 min to Campus",
-      description: "Furnished studio with balcony and gym access. Close to bus line.",
-      price: "$1,150 / month",
+      price: "R$1,150 / mês",
       type: "Studio",
-      beds: 1,
-      baths: 1,
-      size: "320 sq ft",
-      tag: "Furnished",
+      image: "/studio.jpg",
+      lotation: "1 / 2",
+      nearbyUniversities: ["University A", "University B"],
+    },
+    {
+      id: 1,
+      title: "Studio • 10 min to Campus",
+      price: "R$1,150 / mês",
+      type: "Studio",
+      image: "/studio.jpg",
+      lotation: "1 / 2",
+      nearbyUniversities: ["University A", "University B"],
     },
     {
       id: 2,
       title: "4BR Shared House",
-      description: "Large common areas, backyard, and on-site parking.",
-      price: "$3,000 / month",
+      price: "R$3,000 / mês",
       type: "House",
-      beds: 4,
-      baths: 2,
-      size: "1,600 sq ft",
       image: "/house.jpg",
-      tag: "Parking",
+      lotation: "3 / 4",
+      nearbyUniversities: ["University C"],
     },
+    {
+      id: 3,
+      title: "1BR Apartment",
+      price: "R$2,200 / mês",
+      type: "Apartment",
+      image: "/house.jpg",
+      lotation: "1 / 1",
+      nearbyUniversities: ["University A", "University D"],
+    },
+    {
+      id: 4,
+      title: "2BR Condo with Pool",
+      price: "R$2,800 / mês",
+      type: "Condo",
+      image: "/studio.jpg",
+      lotation: "2 / 2",
+      nearbyUniversities: ["University B"],
+    }
   ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
-  };
-
-  const handleApplyFilters = () => {
-    console.log("Filters applied:", filters);
-    // Here you can implement filter logic on the rooms array
   };
 
   return (
     <div>
       <Header />
+
       {/* Barra de busca arredondada centralizada */}
       <div className="bg-gray-100 py-8 px-4 flex justify-center">
-  <form onSubmit={handleSearch} className="w-full max-w-3xl flex items-center bg-white rounded-full shadow px-6 py-1">
+        <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex items-center bg-white rounded-full shadow px-6 py-1">
           <span className="pr-2 text-gray-400">
             {/* Ícone de lupa SVG */}
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
@@ -84,8 +111,8 @@ export default function RoomListPage() {
           </span>
           <input
             type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
+            value={query}
+            onChange={e => setQuery(e.target.value)}
             placeholder="Buscar propriedades"
             className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-full"
           />
@@ -97,86 +124,154 @@ export default function RoomListPage() {
           </button>
         </form>
       </div>
+
       <div className="flex min-h-screen bg-gray-100 p-6">
-        {/* Sidebar Filters */}
-        <div className="w-64 bg-white p-4 rounded-xl shadow-md">
-          <h2 className="font-bold text-lg mb-4">Filters</h2>
-          <div className="space-y-3">
-            <input
-              type="text"
-              name="minPrice"
-              placeholder="Min $"
-              value={filters.minPrice}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="maxPrice"
-              placeholder="Max $"
-              value={filters.maxPrice}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="bedrooms"
-              placeholder="Bedrooms"
-              value={filters.bedrooms}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="propertyType"
-              placeholder="Property type"
-              value={filters.propertyType}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="location"
-              placeholder="Location"
-              value={filters.location}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
-            <input
-              type="text"
-              name="amenities"
-              placeholder="Amenities"
-              value={filters.amenities}
-              onChange={handleChange}
-              className="w-full p-2 border rounded"
-            />
+        
+        {/* Sidebar Filters*/}
+        <div className="w-80 bg-white p-6 rounded-2xl shadow-lg flex flex-col gap-6">
+          <h2 className="font-extrabold text-2xl text-red-600 mb-2">Filtros</h2>
+          <div className="flex flex-col gap-4">
+            {/* Preço máximo */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Preço máximo</label>
+              <input
+                type="number"
+                name="maxPrice"
+                value={filters.maxPrice}
+                onChange={handleChange}
+                placeholder="R$"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              />
+            </div>
+            {/* Quantas pessoas já moram */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Lotação</label>
+              <input
+                type="number"
+                name="currentPeople"
+                value={filters.currentPeople || ""}
+                onChange={handleChange}
+                placeholder="Quantas pessoas já moram"
+                min={0}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              />
+            </div>
+           
+            {/* Tipo */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo</label>
+              <select
+                name="propertyType"
+                value={filters.propertyType}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              >
+                <option value="">Selecione</option>
+                <option value="kitnet">Kitnet</option>
+                <option value="individual_room">Quarto individual</option>
+                <option value="republic">República</option>
+                <option value="shared_room">Quarto compartilhado</option>
+              </select>
+            </div>
+            {/* Status */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
+              <select
+                name="announcementStatus"
+                value={filters.announcementStatus || ""}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              >
+                <option value="">Selecione</option>
+                <option value="paused">Pausado</option>
+                <option value="rented">Alugado</option>
+                <option value="liberation">Liberação</option>
+                <option value="full">Lotado</option>
+                <option value="available">Disponível</option>
+              </select>
+            </div>
+            {/* Restrição de sexo */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Restrição de sexo</label>
+              <select
+                name="sexRestriction"
+                value={filters.sexRestriction || ""}
+                onChange={handleChange}
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              >
+                <option value="">Selecione</option>
+                <option value="male">Masculino</option>
+                <option value="female">Feminino</option>
+                <option value="both">Ambos</option>
+              </select>
+            </div>
+            {/* Universidades próximas */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Universidades próximas</label>
+              <input
+                type="text"
+                name="nearbyUniversities"
+                value={filters.nearbyUniversities || ""}
+                onChange={handleChange}
+                placeholder="Ex: UFU, UNITRI..."
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              />
+            </div>
+            {/* Localização */}
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Localização</label>
+              <input
+                type="text"
+                name="location"
+                value={filters.location}
+                onChange={handleChange}
+                placeholder="Bairro, rua, ponto de referência..."
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+              />
+            </div>
             <button
-              onClick={handleApplyFilters}
-              className="w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 transition"
+              onClick={handleSearchOrFilter}
+              className="w-full bg-red-600 text-white p-2 rounded-lg font-bold mt-2 hover:bg-red-700 transition"
             >
-              Apply Filters
+              Aplicar filtros
             </button>
           </div>
         </div>
-        {/* Room Listings */}
-        <div className="flex-1 ml-6 grid grid-cols-1 gap-6">
+
+  {/* AnnounceSnippet Listings - 2 colunas */}
+  <div className="flex-1 ml-6 grid grid-cols-1 sm:grid-cols-2 gap-8">
           {rooms.map((room) => (
-            <div key={room.id} className="bg-white rounded-xl shadow-md overflow-hidden flex">
+            <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:scale-[1.02] transition-transform border border-gray-100">
               {room.image && (
-                <div className="w-40 relative">
-                  <Image src={room.image} alt={room.title} width={160} height={120} className="object-cover" />
+                <div className="w-full h-40 relative">
+                  <Image src={room.image} alt={room.title} fill style={{objectFit: 'cover'}} className="" />
                 </div>
               )}
-              <div className="p-4 flex-1">
-                <h3 className="font-bold text-lg">{room.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">{room.description}</p>
-                <div className="flex justify-between items-center">
-                  <div className="text-gray-700 text-sm">
-                    {room.beds} beds • {room.baths} baths • {room.size}
-                  </div>
-                  {room.tag && <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs">{room.tag}</span>}
+              <div className="p-5 flex-1 flex flex-col justify-between">
+                <h3 className="font-extrabold text-xl text-red-600 mb-1">{room.title}</h3>
+                <div className="flex flex-wrap gap-2 mb-2">
+                  <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">{room.type}</span>
+                  {room.status && (
+                    <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{room.status}</span>
+                  )}
+                  {room.lotation && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Lotação: {room.lotation}</span>
+                  )}
                 </div>
-                <p className="font-bold mt-2">{room.price}</p>
+                <p className="font-bold text-lg text-gray-900 mb-2">{room.price}</p>
+                {room.nearbyUniversities && room.nearbyUniversities.length > 0 && (
+                  <div className="mb-2">
+                    <span className="text-xs text-gray-500 font-semibold">Universidades próximas:</span>
+                    <ul className="flex flex-wrap gap-1 mt-1">
+                      {room.nearbyUniversities.map((uni, idx) => (
+                        <li key={idx} className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">{uni}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+                <div className="flex justify-end mt-auto">
+                  <button className="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition">Ver detalhes</button>
+                </div>
               </div>
             </div>
           ))}

@@ -13,5 +13,9 @@ export const LoginSchema = Type.Object({
   password: Type.String({ minLength: 6, maxLength: 60 }),
 });
 
+export const RecoverPasswordSchema = Type.Object({
+  email: Type.String({ format: "email" }),
+});
+
 export type RegisterType = Static<typeof RegisterSchema>;
 export type LoginType = Static<typeof LoginSchema>;

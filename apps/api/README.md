@@ -5,6 +5,10 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
 - Close and open terminal
 nvm node install
 
+#### Instalar e subir ElasticSearch em um container Local 
+
+sudo curl -fsSL https://elastic.co/start-local | sudo sh
+
 #### Listar todos os containers (ligados ou não)
 
 docker ps -a
