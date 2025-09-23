@@ -42,5 +42,4 @@ npm run dev
 
 sudo docker compose up postgres
 
-
 curl -fsSL https://elastic.co/start-local | sudo sh

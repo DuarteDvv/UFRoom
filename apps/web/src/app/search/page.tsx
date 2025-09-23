@@ -17,6 +17,7 @@ type AnnounceSnippet = {
   image: string;
   vagas?: string; // vagas disponíveis
   near_university?: string[];
+  distance_to_university?: string[];
 };
 
 export default function RoomListPage() {
@@ -59,10 +60,8 @@ export default function RoomListPage() {
       location: urlLocation,
     });
 
-    // Se há parâmetros na URL, executar busca automaticamente
-    if (urlQuery || urlMaxPrice || urlOpenVac || urlRoomType || urlStatus || urlSexRestriction || urlNearUniversity || urlLocation) {
-      handleSearchOrFilter();
-    }
+    // Sempre executar uma busca ao carregar a página (com ou sem parâmetros)
+    handleSearchOrFilter();
   }, [searchParams]);
 
   const updateURL = (newQuery: string, newFilters: typeof filters) => {
@@ -89,69 +88,37 @@ export default function RoomListPage() {
     // Atualizar URL com os parâmetros atuais
     updateURL(query, filters);
     
-    const res = await fetch('/api/search', {
-      method: 'POST',
-      body: JSON.stringify({ query: query, filters: filters, page: currentPage, pageSize: PAGE_SIZE }),
-      headers: { 'Content-Type': 'application/json' }
-    });
+    try {
+      const res = await fetch('http://localhost:3001/api/search', {
+        method: 'POST',
+        body: JSON.stringify({ query: query, filters: filters}),
+        headers: { 'Content-Type': 'application/json' }
+      });
 
-    const data = await res.json();
-    setAnnouncements(data);
+      console.log('Response status:', res.status);
+      console.log('Response headers:', res.headers.get('content-type'));
+      
+      // Verificar se a resposta é JSON
+      const contentType = res.headers.get('content-type');
+      if (!contentType || !contentType.includes('application/json')) {
+        const text = await res.text();
+        console.error('Response is not JSON:', text);
+        return;
+      }
+
+      if (!res.ok) {
+        console.error('HTTP error:', res.status, res.statusText);
+        return;
+      }
+
+      const data = await res.json();
+      console.log('Search response:', data);
+      setAnnouncements(data.results);
+    } catch (error) {
+      console.error('Search error:', error);
+    }
   };
   
-
-  const rooms: AnnounceSnippet[] = [
-    {
-      id: 1,
-      title: "Studio • 10 min to Campus",
-      price: "R$1,150 / mês",
-      type: "Studio",
-      status: "Disponível",
-      image: "/studio.jpg",
-      vagas: "2",
-      near_university: ["University A", "University B"],
-    },
-    {
-      id: 2,
-      title: "Studio • 10 min to Campus",
-      price: "R$1,150 / mês",
-      type: "Studio",
-      status: "Ocupado",
-      image: "/studio.jpg",
-      vagas: "1",
-      near_university: ["University A", "University B"],
-    },
-    {
-      id: 3,
-      title: "4BR Shared House",
-      price: "R$3,000 / mês",
-      type: "House",
-      status: "Disponível",
-      image: "/house.jpg",
-      vagas: "1",
-      near_university: ["University C"],
-    },
-    {
-      id: 4,
-      title: "1BR Apartment",
-      price: "R$2,200 / mês",
-      type: "Apartment",
-      status: "Ocupado",
-      image: "/house.jpg",
-      vagas: "1",
-      near_university: ["University A", "University D"],
-    },
-    {
-      id: 5,
-      title: "2BR Condo with Pool",
-      price: "R$2,800 / mês",
-      type: "Condo",
-      status: "Disponível",
-      image: "/studio.jpg",
-      vagas: "3",
-      near_university: ["University B"],
-    }
-  ];
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
@@ -325,7 +292,7 @@ export default function RoomListPage() {
       ? 'ml-6 grid-cols-1 sm:grid-cols-2' 
       : 'ml-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
   }`}>
-          {rooms.map((room) => (
+          {announcements.map((room) => (
             <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:scale-[1.02] transition-transform border border-gray-100">
               {room.image && (
                 <div className="w-full h-40 relative">
@@ -353,7 +320,12 @@ export default function RoomListPage() {
                     <span className="text-xs text-gray-500 font-semibold">Universidades próximas:</span>
                     <ul className="flex flex-wrap gap-1 mt-1">
                       {room.near_university.map((uni, idx) => (
-                        <li key={idx} className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">{uni}</li>
+                        <li key={idx} className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">
+                          {uni}
+                          {room.distance_to_university && room.distance_to_university[idx] && (
+                            <span className="ml-1 font-semibold">({room.distance_to_university[idx]})</span>
+                          )}
+                        </li>
                       ))}
                     </ul>
                   </div>

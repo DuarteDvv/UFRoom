@@ -7,18 +7,14 @@ export async function search(
   reply: FastifyReply
 ) 
 {
-  const { query, filters, page = 1, pageSize = 10 } = req.body;
 
   try {
     const { results, total } = await SearchService.searchRooms(
         req.server,
-        query,
-        filters,
-        page,
-        pageSize
+        req.body
     );
-
-    return reply.send({ results, total, page, pageSize });
+    
+    return reply.send({ results, total});
   } catch (error) {
     console.error("Search error:", error);
     return reply.status(500).send({ error: "Internal Server Error" });
