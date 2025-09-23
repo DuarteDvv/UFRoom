@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useEffect } from "react";
 import Image from "next/image";
 import Header from '../../components/Header';
 
@@ -31,6 +32,8 @@ export default function RoomListPage() {
     nearbyUniversities: "",
     location: "",
   });
+
+  //useEffect(() => { handleSearchOrFilter();}, []);
 
   const handleSearchOrFilter = async () => {
     const res = await fetch('/api/search', {
@@ -102,23 +105,26 @@ export default function RoomListPage() {
 
       {/* Barra de busca arredondada centralizada */}
       <div className="bg-gray-100 py-8 px-4 flex justify-center">
-        <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex items-center bg-white rounded-full shadow px-6 py-1">
-          <span className="pr-2 text-gray-400">
-            {/* Ícone de lupa SVG */}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-            </svg>
-          </span>
-          <input
-            type="text"
-            value={query}
-            onChange={e => setQuery(e.target.value)}
-            placeholder="Buscar propriedades"
-            className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-full"
-          />
+        <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex gap-0 items-center">
+          <div className="flex-1 flex items-center bg-white rounded-l-full shadow px-6 py-1">
+            <span className="pr-2 text-gray-400">
+              {/* Ícone de lupa SVG */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+              placeholder="Buscar propriedades"
+              className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-l-full"
+            />
+          </div>
           <button
             type="submit"
-            className="bg-red-600 text-white px-6 py-1 rounded-full ml-2 hover:bg-red-700 transition"
+            className="bg-red-600 text-white px-8 py-1 rounded-r-full h-[48px] font-bold text-base hover:bg-red-700 transition border-l-2 border-white"
+            style={{ minHeight: '48px' }}
           >
             Buscar
           </button>
@@ -140,7 +146,8 @@ export default function RoomListPage() {
                 value={filters.maxPrice}
                 onChange={handleChange}
                 placeholder="R$"
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
+                style={{ MozAppearance: 'textfield' }}
               />
             </div>
             {/* Quantas pessoas já moram */}
@@ -153,7 +160,8 @@ export default function RoomListPage() {
                 onChange={handleChange}
                 placeholder="Quantas pessoas já moram"
                 min={0}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
+                style={{ MozAppearance: 'textfield' }}
               />
             </div>
            
@@ -169,25 +177,7 @@ export default function RoomListPage() {
                 <option value="">Selecione</option>
                 <option value="kitnet">Kitnet</option>
                 <option value="individual_room">Quarto individual</option>
-                <option value="republic">República</option>
                 <option value="shared_room">Quarto compartilhado</option>
-              </select>
-            </div>
-            {/* Status */}
-            <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Status</label>
-              <select
-                name="announcementStatus"
-                value={filters.announcementStatus || ""}
-                onChange={handleChange}
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
-              >
-                <option value="">Selecione</option>
-                <option value="paused">Pausado</option>
-                <option value="rented">Alugado</option>
-                <option value="liberation">Liberação</option>
-                <option value="full">Lotado</option>
-                <option value="available">Disponível</option>
               </select>
             </div>
             {/* Restrição de sexo */}

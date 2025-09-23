@@ -1,5 +1,5 @@
 -- types enumerados
-CREATE TYPE property_type AS ENUM ('kitnet', 'individual_room', 'republic', 'shared_room');
+CREATE TYPE property_type AS ENUM ('kitnet', 'individual_room', 'shared_room');
 CREATE TYPE announcement_status AS ENUM ('paused', 'rented', 'liberation', 'full', 'available');
 CREATE TYPE sex_restrict AS ENUM ('male', 'female', 'both');
 
