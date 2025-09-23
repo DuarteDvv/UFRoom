@@ -10,7 +10,7 @@ export async function search(
   const { query, filters, page = 1, pageSize = 10 } = req.body;
 
   try {
-    const { results, total } = await SearchService.searchProperties(
+    const { results, total } = await SearchService.searchRooms(
         req.server,
         query,
         filters,

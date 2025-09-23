@@ -14,7 +14,4 @@ export default async function searchRoutes(fastify: FastifyInstance) {
     search
   );
 
-
-
-
 };

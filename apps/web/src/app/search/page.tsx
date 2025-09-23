@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Header from '../../components/Header';
 
@@ -12,30 +13,82 @@ type AnnounceSnippet = {
   title: string;
   price: string;
   type: string;
-  status?: string;
+  status: string;
   image: string;
-  lotation?: string; // <ocuppants / maxOccupants>
-  nearbyUniversities?: string[];
+  vagas?: string; // vagas disponíveis
+  near_university?: string[];
 };
 
 export default function RoomListPage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [announcements, setAnnouncements] = useState<AnnounceSnippet[]>([]);
+  const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState({
-    maxPrice: "",
-    currentPeople: "",
-    propertyType: "",
-    announcementStatus: "",
-    sexRestriction: "",
-    nearbyUniversities: "",
+    max_price: "",
+    open_vac: "",
+    room_type: "",
+    status: "",
+    sex_restriction: "",
+    near_university: "",
     location: "",
   });
 
-  //useEffect(() => { handleSearchOrFilter();}, []);
+  // Carregar parâmetros da URL quando o componente monta
+  useEffect(() => {
+    const urlQuery = searchParams.get('q') || '';
+    const urlMaxPrice = searchParams.get('max_price') || '';
+    const urlOpenVac = searchParams.get('open_vac') || '';
+    const urlRoomType = searchParams.get('room_type') || '';
+    const urlStatus = searchParams.get('status') || '';
+    const urlSexRestriction = searchParams.get('sex_restriction') || '';
+    const urlNearUniversity = searchParams.get('near_university') || '';
+    const urlLocation = searchParams.get('location') || '';
 
-  const handleSearchOrFilter = async () => {
+    setQuery(urlQuery);
+    setFilters({
+      max_price: urlMaxPrice,
+      open_vac: urlOpenVac,
+      room_type: urlRoomType,
+      status: urlStatus,
+      sex_restriction: urlSexRestriction,
+      near_university: urlNearUniversity,
+      location: urlLocation,
+    });
+
+    // Se há parâmetros na URL, executar busca automaticamente
+    if (urlQuery || urlMaxPrice || urlOpenVac || urlRoomType || urlStatus || urlSexRestriction || urlNearUniversity || urlLocation) {
+      handleSearchOrFilter();
+    }
+  }, [searchParams]);
+
+  const updateURL = (newQuery: string, newFilters: typeof filters) => {
+    const params = new URLSearchParams();
+    
+    if (newQuery) params.set('q', newQuery);
+    if (newFilters.max_price) params.set('max_price', newFilters.max_price);
+    if (newFilters.open_vac) params.set('open_vac', newFilters.open_vac);
+    if (newFilters.room_type) params.set('room_type', newFilters.room_type);
+    if (newFilters.status) params.set('status', newFilters.status);
+    if (newFilters.sex_restriction) params.set('sex_restriction', newFilters.sex_restriction);
+    if (newFilters.near_university) params.set('near_university', newFilters.near_university);
+    if (newFilters.location) params.set('location', newFilters.location);
+
+    const newURL = params.toString() ? `/search?${params.toString()}` : '/search';
+    router.push(newURL);
+  };
+
+  const handleSearchOrFilter = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // Atualizar URL com os parâmetros atuais
+    updateURL(query, filters);
+    
     const res = await fetch('/api/search', {
       method: 'POST',
       body: JSON.stringify({ query: query, filters: filters, page: currentPage, pageSize: PAGE_SIZE }),
@@ -53,49 +106,54 @@ export default function RoomListPage() {
       title: "Studio • 10 min to Campus",
       price: "R$1,150 / mês",
       type: "Studio",
+      status: "Disponível",
       image: "/studio.jpg",
-      lotation: "1 / 2",
-      nearbyUniversities: ["University A", "University B"],
-    },
-    {
-      id: 1,
-      title: "Studio • 10 min to Campus",
-      price: "R$1,150 / mês",
-      type: "Studio",
-      image: "/studio.jpg",
-      lotation: "1 / 2",
-      nearbyUniversities: ["University A", "University B"],
+      vagas: "2",
+      near_university: ["University A", "University B"],
     },
     {
       id: 2,
-      title: "4BR Shared House",
-      price: "R$3,000 / mês",
-      type: "House",
-      image: "/house.jpg",
-      lotation: "3 / 4",
-      nearbyUniversities: ["University C"],
+      title: "Studio • 10 min to Campus",
+      price: "R$1,150 / mês",
+      type: "Studio",
+      status: "Ocupado",
+      image: "/studio.jpg",
+      vagas: "1",
+      near_university: ["University A", "University B"],
     },
     {
       id: 3,
-      title: "1BR Apartment",
-      price: "R$2,200 / mês",
-      type: "Apartment",
+      title: "4BR Shared House",
+      price: "R$3,000 / mês",
+      type: "House",
+      status: "Disponível",
       image: "/house.jpg",
-      lotation: "1 / 1",
-      nearbyUniversities: ["University A", "University D"],
+      vagas: "1",
+      near_university: ["University C"],
     },
     {
       id: 4,
+      title: "1BR Apartment",
+      price: "R$2,200 / mês",
+      type: "Apartment",
+      status: "Ocupado",
+      image: "/house.jpg",
+      vagas: "1",
+      near_university: ["University A", "University D"],
+    },
+    {
+      id: 5,
       title: "2BR Condo with Pool",
       price: "R$2,800 / mês",
       type: "Condo",
+      status: "Disponível",
       image: "/studio.jpg",
-      lotation: "2 / 2",
-      nearbyUniversities: ["University B"],
+      vagas: "3",
+      near_university: ["University B"],
     }
   ];
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFilters({ ...filters, [e.target.name]: e.target.value });
   };
 
@@ -103,38 +161,68 @@ export default function RoomListPage() {
     <div>
       <Header />
 
-      {/* Barra de busca arredondada centralizada */}
-      <div className="bg-gray-100 py-8 px-4 flex justify-center">
-        <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex gap-0 items-center">
-          <div className="flex-1 flex items-center bg-white rounded-l-full shadow px-6 py-1">
-            <span className="pr-2 text-gray-400">
-              {/* Ícone de lupa SVG */}
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-              </svg>
-            </span>
-            <input
-              type="text"
-              value={query}
-              onChange={e => setQuery(e.target.value)}
-              placeholder="Buscar propriedades"
-              className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-l-full"
-            />
-          </div>
+      {/* Barra de busca e botão de filtros */}
+      <div className="bg-gray-100 py-8 px-4">
+        <div className="relative max-w-6xl mx-auto">
+          {/* Botão para mostrar/esconder filtros - próximo à barra */}
           <button
-            type="submit"
-            className="bg-red-600 text-white px-8 py-1 rounded-r-full h-[48px] font-bold text-base hover:bg-red-700 transition border-l-2 border-white"
-            style={{ minHeight: '48px' }}
+            onClick={() => setShowFilters(!showFilters)}
+            className="absolute left-8 top-1/2 transform -translate-y-1/2 bg-white border-2 border-red-600 text-red-600 p-3 rounded-lg shadow-lg hover:bg-red-600 hover:text-white transition-all duration-300 flex items-center gap-2 z-10"
+            title={showFilters ? "Esconder filtros" : "Mostrar filtros"}
           >
-            Buscar
+          {showFilters ? (
+            <>
+              {/* Ícone de filtro com X */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25H12" />
+              </svg>
+              <span className="text-sm font-semibold hidden sm:block">Esconder</span>
+            </>
+          ) : (
+            <>
+              {/* Ícone de filtro */}
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 3c2.755 0 5.455.232 8.083.678.533.09.917.556.917 1.096v1.044a2.25 2.25 0 01-.659 1.591l-5.432 5.432a2.25 2.25 0 00-.659 1.591v2.927a2.25 2.25 0 01-1.244 2.013L9.75 21v-6.568a2.25 2.25 0 00-.659-1.591L3.659 7.409A2.25 2.25 0 013 5.818V4.774c0-.54.384-1.006.917-1.096A48.32 48.32 0 0112 3z" />
+              </svg>
+              <span className="text-sm font-semibold hidden sm:block">Filtros</span>
+            </>
+          )}
           </button>
-        </form>
-      </div>
 
-      <div className="flex min-h-screen bg-gray-100 p-6">
-        
+          {/* Barra de busca - centralizada */}
+          <div className="flex justify-center">
+            <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex gap-0 items-center">
+            <div className="flex-1 flex items-center bg-white rounded-l-full shadow px-6 py-1">
+              <span className="pr-2 text-gray-400">
+                {/* Ícone de lupa SVG */}
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+                </svg>
+              </span>
+              <input
+                type="text"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                placeholder="Buscar propriedades"
+                className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-l-full"
+              />
+            </div>
+            <button
+              type="submit"
+              className="bg-red-600 text-white px-8 py-1 rounded-r-full h-[48px] font-bold text-base hover:bg-red-700 transition border-l-2 border-white"
+              style={{ minHeight: '48px' }}
+            >
+              Buscar
+            </button>
+          </form>
+          </div>
+        </div>
+      </div>      <div className="flex min-h-screen bg-gray-100 p-6">
+
         {/* Sidebar Filters*/}
-        <div className="w-80 bg-white p-6 rounded-2xl shadow-lg flex flex-col gap-6">
+        <div className={`w-80 bg-white p-6 rounded-2xl shadow-lg flex flex-col gap-6 transition-all duration-300 ${
+          showFilters ? 'translate-x-0 opacity-100' : '-translate-x-full opacity-0 absolute -left-80'
+        }`}>
           <h2 className="font-extrabold text-2xl text-red-600 mb-2">Filtros</h2>
           <div className="flex flex-col gap-4">
             {/* Preço máximo */}
@@ -142,23 +230,23 @@ export default function RoomListPage() {
               <label className="block text-sm font-semibold text-gray-700 mb-1">Preço máximo</label>
               <input
                 type="number"
-                name="maxPrice"
-                value={filters.maxPrice}
-                onChange={handleChange}
+                name="max_price"
+                value={filters.max_price}
+                onChange={handleFilterChange}
                 placeholder="R$"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
                 style={{ MozAppearance: 'textfield' }}
               />
             </div>
-            {/* Quantas pessoas já moram */}
+            {/* Vagas */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Lotação</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Vagas Disponiveis</label>
               <input
                 type="number"
-                name="currentPeople"
-                value={filters.currentPeople || ""}
-                onChange={handleChange}
-                placeholder="Quantas pessoas já moram"
+                name="open_vac"
+                value={filters.open_vac || ""}
+                onChange={handleFilterChange}
+                placeholder="Quantas vagas precisa ?"
                 min={0}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
                 style={{ MozAppearance: 'textfield' }}
@@ -167,15 +255,15 @@ export default function RoomListPage() {
            
             {/* Tipo */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de quarto</label>
               <select
-                name="propertyType"
-                value={filters.propertyType}
-                onChange={handleChange}
+                name="room_type"
+                value={filters.room_type}
+                onChange={handleFilterChange}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
               >
                 <option value="">Selecione</option>
-                <option value="kitnet">Kitnet</option>
+                <option value="kitnet">Kitnet</option>  
                 <option value="individual_room">Quarto individual</option>
                 <option value="shared_room">Quarto compartilhado</option>
               </select>
@@ -184,9 +272,9 @@ export default function RoomListPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Restrição de sexo</label>
               <select
-                name="sexRestriction"
-                value={filters.sexRestriction || ""}
-                onChange={handleChange}
+                name="sex_restriction"
+                value={filters.sex_restriction || ""}
+                onChange={handleFilterChange}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
               >
                 <option value="">Selecione</option>
@@ -195,17 +283,20 @@ export default function RoomListPage() {
                 <option value="both">Ambos</option>
               </select>
             </div>
-            {/* Universidades próximas */}
+            {/* Universidade próxima */}
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Universidades próximas</label>
-              <input
-                type="text"
-                name="nearbyUniversities"
-                value={filters.nearbyUniversities || ""}
-                onChange={handleChange}
-                placeholder="Ex: UFU, UNITRI..."
+              <select
+                name="near_university"
+                value={filters.near_university || ""}
+                onChange={handleFilterChange}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
-              />
+              >
+                <option value="">Selecione</option>
+                <option value="UFMG CAMPUS 1">UFMG CAMPUS 1</option>
+                <option value="UFMG CAMPUS 2">UFMG CAMPUS 2</option>
+                <option value="PUC MINAS">PUC MINAS</option>
+              </select>
             </div>
             {/* Localização */}
             <div>
@@ -214,13 +305,13 @@ export default function RoomListPage() {
                 type="text"
                 name="location"
                 value={filters.location}
-                onChange={handleChange}
+                onChange={handleFilterChange}
                 placeholder="Bairro, rua, ponto de referência..."
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
               />
             </div>
             <button
-              onClick={handleSearchOrFilter}
+              onClick={() => handleSearchOrFilter()}
               className="w-full bg-red-600 text-white p-2 rounded-lg font-bold mt-2 hover:bg-red-700 transition"
             >
               Aplicar filtros
@@ -228,8 +319,12 @@ export default function RoomListPage() {
           </div>
         </div>
 
-  {/* AnnounceSnippet Listings - 2 colunas */}
-  <div className="flex-1 ml-6 grid grid-cols-1 sm:grid-cols-2 gap-8">
+  {/* AnnounceSnippet Listings - 2 ou 3 colunas */}
+  <div className={`flex-1 grid gap-8 transition-all duration-300 ${
+    showFilters 
+      ? 'ml-6 grid-cols-1 sm:grid-cols-2' 
+      : 'ml-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  }`}>
           {rooms.map((room) => (
             <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:scale-[1.02] transition-transform border border-gray-100">
               {room.image && (
@@ -241,19 +336,23 @@ export default function RoomListPage() {
                 <h3 className="font-extrabold text-xl text-red-600 mb-1">{room.title}</h3>
                 <div className="flex flex-wrap gap-2 mb-2">
                   <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded-full text-xs font-semibold">{room.type}</span>
-                  {room.status && (
-                    <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-semibold">{room.status}</span>
-                  )}
-                  {room.lotation && (
-                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Lotação: {room.lotation}</span>
+                  <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                    room.status === "Disponível" 
+                      ? "bg-green-100 text-green-800" 
+                      : "bg-red-100 text-red-800"
+                  }`}>
+                    {room.status}
+                  </span>
+                  {room.vagas && room.status === "Disponível" && (
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Vagas: {room.vagas}</span>
                   )}
                 </div>
                 <p className="font-bold text-lg text-gray-900 mb-2">{room.price}</p>
-                {room.nearbyUniversities && room.nearbyUniversities.length > 0 && (
+                {room.near_university && room.near_university.length > 0 && (
                   <div className="mb-2">
                     <span className="text-xs text-gray-500 font-semibold">Universidades próximas:</span>
                     <ul className="flex flex-wrap gap-1 mt-1">
-                      {room.nearbyUniversities.map((uni, idx) => (
+                      {room.near_university.map((uni, idx) => (
                         <li key={idx} className="bg-green-100 text-green-800 px-2 py-0.5 rounded-full text-xs">{uni}</li>
                       ))}
                     </ul>

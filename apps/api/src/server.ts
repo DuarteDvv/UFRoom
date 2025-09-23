@@ -6,6 +6,7 @@ import helmet from '@fastify/helmet'
 import rateLimit from '@fastify/rate-limit'
 import prismaPlugin from './plugins/prisma' 
 import jwtPlugin from './plugins/jwt'
+import elasticsearchPlugin from './plugins/elasticsearch'
 import fastifySensible from "fastify-sensible";
 
 import addressRoutes from './routes/address'
@@ -84,6 +85,11 @@ async function createServer(options: ServerOptions = {}) {
 
   // Registrando o plugin JWT
   await server.register(jwtPlugin)
+
+  // Registrando o plugin Elasticsearch
+  await server.register(elasticsearchPlugin, {
+    node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200'
+  })
 
   await server.register(fastifySensible)
 

@@ -49,14 +49,19 @@ const rooms: any[] = [
     }
   ];
 
-export async function searchProperties(
-  fastify: FastifyInstance,
+export async function searchRooms(
+  server: FastifyInstance,
   query: string,
   filters: string[] = [],
   page: number = 1,
   pageSize: number = 10
 ) 
 {
+
+  console.log("Search query:", query);
+  console.log("Filters:", filters);
+  console.log("Page:", page);
+  console.log("Page Size:", pageSize);
 
     return {
         results: rooms,
