@@ -1,173 +1,7 @@
 import { FastifyInstance } from "fastify";
 import { SearchType } from "../schemas/search";
 
-const rooms: any[] = [
-  {
-    id: 1,
-    title: "Studio • 10 min to Campus",
-    price: "R$1,150 / mês",
-    type: "Studio",
-    status: "Disponível",
-    image: "/studio.jpg",
-    vagas: "2",
-    near_university: ["University A", "University B"],
-    distance_to_university: ["500m", "1km"]
-  },
-  {
-    id: 2,
-    title: "Studio • 10 min to Campus",
-    price: "R$1,150 / mês",
-    type: "Studio",
-    status: "Ocupado",
-    image: "/studio.jpg",
-    vagas: "1",
-    near_university: ["University A", "University B"],
-    distance_to_university: ["500m", "1km"]
-  },
-  {
-    id: 3,
-    title: "4BR Shared House",
-    price: "R$3,000 / mês",
-    type: "House",
-    status: "Disponível",
-    image: "/house.jpg",
-    vagas: "1",
-    near_university: ["University C"],
-    distance_to_university: ["2km"]
-  },
-  {
-    id: 4,
-    title: "1BR Apartment",
-    price: "R$2,200 / mês",
-    type: "Apartment",
-    status: "Ocupado",
-    image: "/house.jpg",
-    vagas: "1",
-    near_university: ["University A", "University D"],
-    distance_to_university: ["1.5km", "2km"]
-  },
-  {
-    id: 5,
-    title: "2BR Condo with Pool",
-    price: "R$2,800 / mês",
-    type: "Condo",
-    status: "Disponível",
-    image: "/studio.jpg",
-    vagas: "3",
-    near_university: ["University B"],
-    distance_to_university: ["800m"]
-  },
-  {
-    id: 6,
-    title: "3BR Penthouse",
-    price: "R$4,500 / mês",
-    type: "Penthouse",
-    status: "Disponível",
-    image: "/penthouse.jpg",
-    vagas: "2",
-    near_university: ["University E"],
-    distance_to_university: ["3km"]
-  },
-  {
-    id: 7,
-    title: "1BR Loft Downtown",
-    price: "R$1,900 / mês",
-    type: "Loft",
-    status: "Ocupado",
-    image: "/loft.jpg",
-    vagas: "1",
-    near_university: ["University A"],
-    distance_to_university: ["700m"]
-  },
-  {
-    id: 8,
-    title: "Shared Room in 2BR Apartment",
-    price: "R$950 / mês",
-    type: "Apartment",
-    status: "Disponível",
-    image: "/shared.jpg",
-    vagas: "1",
-    near_university: ["University B", "University C"],
-    distance_to_university: ["1.2km", "2.5km"]
-  },
-  {
-    id: 9,
-    title: "Studio with Balcony",
-    price: "R$1,300 / mês",
-    type: "Studio",
-    status: "Disponível",
-    image: "/studio-balcony.jpg",
-    vagas: "1",
-    near_university: ["University D"],
-    distance_to_university: ["900m"]
-  },
-  {
-    id: 10,
-    title: "2BR House with Garden",
-    price: "R$2,400 / mês",
-    type: "House",
-    status: "Ocupado",
-    image: "/garden-house.jpg",
-    vagas: "2",
-    near_university: ["University E"],
-    distance_to_university: ["2.8km"]
-  },
-  {
-    id: 11,
-    title: "1BR Apartment with Garage",
-    price: "R$2,100 / mês",
-    type: "Apartment",
-    status: "Disponível",
-    image: "/garage-apartment.jpg",
-    vagas: "1",
-    near_university: ["University C"],
-    distance_to_university: ["1.7km"]
-  },
-  {
-    id: 12,
-    title: "3BR Condo with Gym",
-    price: "R$3,200 / mês",
-    type: "Condo",
-    status: "Disponível",
-    image: "/gym-condo.jpg",
-    vagas: "2",
-    near_university: ["University B", "University D"],
-    distance_to_university: ["1.1km", "2.3km"]
-  },
-  {
-    id: 13,
-    title: "Studio in Historic Center",
-    price: "R$1,250 / mês",
-    type: "Studio",
-    status: "Ocupado",
-    image: "/historic-studio.jpg",
-    vagas: "1",
-    near_university: ["University A"],
-    distance_to_university: ["600m"]
-  },
-  {
-    id: 14,
-    title: "4BR House with Pool",
-    price: "R$4,000 / mês",
-    type: "House",
-    status: "Disponível",
-    image: "/pool-house.jpg",
-    vagas: "3",
-    near_university: ["University E"],
-    distance_to_university: ["3.5km"]
-  },
-  {
-    id: 15,
-    title: "2BR Apartment with View",
-    price: "R$2,600 / mês",
-    type: "Apartment",
-    status: "Disponível",
-    image: "/view-apartment.jpg",
-    vagas: "2",
-    near_university: ["University D"],
-    distance_to_university: ["1.8km"]
-  }
-  ];
+
 
 export async function searchRooms(
   server: FastifyInstance,
@@ -175,17 +9,167 @@ export async function searchRooms(
 ) 
 {
 
-  console.log("Search query:", body.query);
-  console.log("Filters:", body.filters);
+  const elastic_client = server.elasticsearch;
 
+  const { query, filters } = body;
+
+  const esQuery: any = {
+    index: 'announcements',
+    body: {
+      query: {
+        bool: {
+          must: [],
+          filter: [],
+          should: []
+        }
+      }
+    }
+  };
+
+  console.log('Search Input:', JSON.stringify(body, null, 2));
+
+
+  // dar maior peso para anuncios com status 'available' e mais recentes
+  esQuery.body.query.bool.should.push(
+    {
+      term: { 
+        "status": { 
+          value: "available",
+          boost: 2  // Aumenta a relevância dos anúncios disponíveis
+        } 
+      },
+    },
+    {
+      range: {
+        updated_at: {
+          gte: "now-30d/d", 
+          boost: 1.5       // Aumenta a relevância dos anúncios mais recentes últimos 30 dias
+        }
+      }
+    }
+  );  
+
+  // adicionar query de busca
+  if (query) {
+    esQuery.body.query.bool.must.push({
+      multi_match: {
+        query: query,
+        fields: ['title^3', 'description^2', 'rules'],
+        fuzziness: 'AUTO'
+      }
+    });
+  } 
+  else {
+    esQuery.body.query.bool.must.push({ match_all: {} });
+  }
   
 
-    return {
-        results: rooms,
-        total: rooms.length
-    };
+  // adicionar filtros
+  if (filters) {
 
+    // 1. FILTRO DE PREÇO MÁXIMO (range filter)
+    if (filters.max_price) {
+      esQuery.body.query.bool.filter.push({
+        range: { 
+          price: { 
+            lte: parseFloat(filters.max_price) 
+          } 
+        }
+      });
+    }
+
+    // 2. FILTRO DE VAGAS DISPONÍVEIS (range filter)  
+    if (filters.open_vac) {
+      esQuery.body.query.bool.filter.push({
+        range: { 
+          open_vac: { 
+            gte: parseInt(filters.open_vac) 
+          } 
+        }
+      });
+    }
+
+    // 3. FILTRO DE TIPO DE QUARTO (term filter)
+    if (filters.room_type && filters.room_type.length > 0) {
+      
+      esQuery.body.query.bool.filter.push({
+        term: { 
+          "type_of": filters.room_type 
+        }
+      });
+    }
+
+    // 4. FILTRO DE STATUS (term filter)
+    if (filters.status && filters.status.length > 0) {
+      esQuery.body.query.bool.filter.push({
+        term: { 
+          "status": filters.status 
+        }
+      });
+    }
+
+    // 5. FILTRO DE RESTRIÇÃO DE SEXO (term filter)
+    if (filters.sex_restriction && filters.sex_restriction.length > 0) {
+      esQuery.body.query.bool.filter.push({
+        term: { 
+          "sex_restriction": filters.sex_restriction 
+        }
+      });
+    }
+
+    // 6. FILTRO DE UNIVERSIDADE PRÓXIMA (nested filter)
+    if (filters.near_university && filters.near_university.length > 0) {
+      esQuery.body.query.bool.filter.push({
+        nested: {
+          path: "universities",
+          query: {
+            term: {
+              "universities.abbreviation": filters.near_university
+            }
+          }
+        }
+      });
+    }
+
+    // 7. FILTRO DE LOCALIZAÇÃO (match/wildcard para busca textual)
+    if (filters.location && filters.location.length > 0) {
+      esQuery.body.query.bool.filter.push({
+        multi_match: {
+          query: filters.location,
+          fields: ["address", "neighborhood", "city"],
+          fuzziness: "AUTO"
+        }
+      });
+    }
+  }
+
+  console.log('Elasticsearch Query:', JSON.stringify(esQuery, null, 2));
+
+  const searchResults = await elastic_client.search(esQuery);
+
+  const rooms_raw = searchResults.hits.hits.map((hit: any) => hit._source);
+
+  const rooms = rooms_raw.map((room: any) => ({
+    id: room.id,
+    title: room.title,
+    price: `R$${room.price} / mês`,
+    type: room.type_of === 'individual_room' ? "Quarto Individual" : room.type_of === 'shared_room' ? "Quarto Compartilhado" :  "Kitnet",
+    status: room.status === 'available' ? "Disponível" : "Ocupado",
+    image: room.images && room.images.length > 0 ? room.images[0] : "/studio.jpg",
+    vagas: room.open_vac?.toString(),
+    sex_restriction: room.sex_restriction,
+    near_university: room.universities?.map((u: any) => u.abbreviation) || [],
+    distance_to_university: room.universities?.map((u: any) => `${u.distance} km`) || [],
+    updated_at: room.updated_at
+  }));
+
+  console.log('Search Results:', JSON.stringify(rooms_raw, null, 2));
+
+  return {
+    results: rooms
+  };
 }
+
 
 
 

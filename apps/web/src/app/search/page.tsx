@@ -16,8 +16,10 @@ type AnnounceSnippet = {
   status: string;
   image: string;
   vagas?: string; // vagas disponíveis
+  sex_restriction?: string; // restrição de sexo
   near_university?: string[];
   distance_to_university?: string[];
+  updated_at?: string; // dias desde a última atualização
 };
 
 export default function RoomListPage() {
@@ -38,7 +40,7 @@ export default function RoomListPage() {
     location: "",
   });
 
-  // Carregar parâmetros da URL quando o componente monta
+  // Carregar parâmetros da URL quando o componente monta ou URL muda
   useEffect(() => {
     const urlQuery = searchParams.get('q') || '';
     const urlMaxPrice = searchParams.get('max_price') || '';
@@ -49,8 +51,7 @@ export default function RoomListPage() {
     const urlNearUniversity = searchParams.get('near_university') || '';
     const urlLocation = searchParams.get('location') || '';
 
-    setQuery(urlQuery);
-    setFilters({
+    const newFilters = {
       max_price: urlMaxPrice,
       open_vac: urlOpenVac,
       room_type: urlRoomType,
@@ -58,10 +59,13 @@ export default function RoomListPage() {
       sex_restriction: urlSexRestriction,
       near_university: urlNearUniversity,
       location: urlLocation,
-    });
+    };
 
-    // Sempre executar uma busca ao carregar a página (com ou sem parâmetros)
-    handleSearchOrFilter();
+    setQuery(urlQuery);
+    setFilters(newFilters);
+
+    // Fazer a busca diretamente aqui sem chamar handleSearchOrFilter
+    performSearch(urlQuery, newFilters);
   }, [searchParams]);
 
   const updateURL = (newQuery: string, newFilters: typeof filters) => {
@@ -80,18 +84,12 @@ export default function RoomListPage() {
     router.push(newURL);
   };
 
-  const handleSearchOrFilter = async (e?: React.FormEvent) => {
-    if (e) {
-      e.preventDefault();
-    }
-    
-    // Atualizar URL com os parâmetros atuais
-    updateURL(query, filters);
-    
+  // Função para fazer a busca sem atualizar a URL
+  const performSearch = async (searchQuery: string, searchFilters: typeof filters) => {
     try {
       const res = await fetch('http://localhost:3001/api/search', {
         method: 'POST',
-        body: JSON.stringify({ query: query, filters: filters}),
+        body: JSON.stringify({ query: searchQuery, filters: searchFilters}),
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -118,11 +116,33 @@ export default function RoomListPage() {
       console.error('Search error:', error);
     }
   };
+
+  const handleSearchOrFilter = async (e?: React.FormEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
+    
+    // Atualizar URL com os parâmetros atuais (isso vai disparar o useEffect)
+    updateURL(query, filters);
+  };
   
 
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setFilters({ ...filters, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+   
+    if (name === 'max_price' || name === 'open_vac') {
+      
+      if (value === '' || (/^\d+$/.test(value))) {
+        setFilters({ ...filters, [name]: value });
+      }
+      
+      return;
+    }
+    
+    setFilters({ ...filters, [name]: value });
   };
+
 
   return (
     <div>
@@ -196,10 +216,34 @@ export default function RoomListPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Preço máximo</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="max_price"
                 value={filters.max_price}
                 onChange={handleFilterChange}
+                onKeyDown={(e) => {
+                  
+                  const allowedKeys = [
+                    'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+                    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                    'Home', 'End'
+                  ];
+                  
+                  const isNumber = /^[0-9]$/.test(e.key);
+                  const isAllowedKey = allowedKeys.includes(e.key);
+                
+                  if (!isNumber && !isAllowedKey) {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+               
+                  e.preventDefault();
+                  const paste = e.clipboardData.getData('text');
+                  if (/^\d+$/.test(paste)) {
+                    setFilters({ ...filters, max_price: paste });
+                  }
+                }}
                 placeholder="R$"
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
                 style={{ MozAppearance: 'textfield' }}
@@ -209,12 +253,36 @@ export default function RoomListPage() {
             <div>
               <label className="block text-sm font-semibold text-gray-700 mb-1">Vagas Disponiveis</label>
               <input
-                type="number"
+                type="text"
+                inputMode="numeric"
                 name="open_vac"
                 value={filters.open_vac || ""}
                 onChange={handleFilterChange}
+                onKeyDown={(e) => {
+                  
+                  const allowedKeys = [
+                    'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+                    'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+                    'Home', 'End'
+                  ];
+                  
+                  const isNumber = /^[0-9]$/.test(e.key);
+                  const isAllowedKey = allowedKeys.includes(e.key);
+                  
+                  if (!isNumber && !isAllowedKey) {
+                    e.preventDefault();
+                  }
+                }}
+                onPaste={(e) => {
+                 
+                  e.preventDefault();
+                  const paste = e.clipboardData.getData('text');
+                  if (/^\d+$/.test(paste)) {
+                    setFilters({ ...filters, open_vac: paste });
+                  }
+                }}
+
                 placeholder="Quantas vagas precisa ?"
-                min={0}
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700 appearance-none"
                 style={{ MozAppearance: 'textfield' }}
               />
@@ -262,6 +330,8 @@ export default function RoomListPage() {
                 <option value="">Selecione</option>
                 <option value="UFMG CAMPUS 1">UFMG CAMPUS 1</option>
                 <option value="UFMG CAMPUS 2">UFMG CAMPUS 2</option>
+                <option value="UFMG">UFMG</option>
+                <option value="PUC">PUC</option>
                 <option value="PUC MINAS">PUC MINAS</option>
               </select>
             </div>
@@ -278,7 +348,7 @@ export default function RoomListPage() {
               />
             </div>
             <button
-              onClick={() => handleSearchOrFilter()}
+              onClick={() => updateURL(query, filters)}
               className="w-full bg-red-600 text-white p-2 rounded-lg font-bold mt-2 hover:bg-red-700 transition"
             >
               Aplicar filtros
@@ -287,12 +357,73 @@ export default function RoomListPage() {
         </div>
 
   {/* AnnounceSnippet Listings - 2 ou 3 colunas */}
-  <div className={`flex-1 grid gap-8 transition-all duration-300 ${
-    showFilters 
-      ? 'ml-6 grid-cols-1 sm:grid-cols-2' 
-      : 'ml-0 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+  <div className={`flex-1 transition-all duration-300 ${
+    showFilters ? 'ml-6' : 'ml-0'
   }`}>
-          {announcements.map((room) => (
+    {announcements.length === 0 ? (
+      /* Mensagem de nenhum resultado */
+      <div className="flex flex-col items-center justify-center min-h-[500px] pt-16 text-center">
+        <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
+          {/* Ícone de busca vazia */}
+          <div className="mb-6">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 mx-auto text-gray-400">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+            </svg>
+          </div>
+          
+          <h3 className="text-2xl font-bold text-gray-800 mb-4">
+            Nenhum resultado encontrado
+          </h3>
+          
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            Não encontramos anúncios que correspondam aos seus critérios de busca. 
+            Tente ajustar os filtros ou usar termos diferentes.
+          </p>
+          
+          <div className="space-y-3 text-sm text-gray-500">
+            <p className="flex items-center justify-center gap-2">
+              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+              Tente expandir a área de busca
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+              Remova alguns filtros
+            </p>
+            <p className="flex items-center justify-center gap-2">
+              <span className="w-2 h-2 bg-red-500 rounded-full"></span>
+              Use palavras-chave diferentes
+            </p>
+          </div>
+          
+          <button
+            onClick={() => {
+              const newFilters = {
+                max_price: "",
+                open_vac: "",
+                room_type: "",
+                status: "",
+                sex_restriction: "",
+                near_university: "",
+                location: "",
+              };
+              setQuery("");
+              setFilters(newFilters);
+              updateURL("", newFilters);
+            }}
+            className="mt-6 bg-red-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-red-700 transition-colors"
+          >
+            Limpar filtros e buscar novamente
+          </button>
+        </div>
+      </div>
+    ) : (
+      /* Grid com resultados */
+      <div className={`grid gap-8 transition-all duration-300 ${
+        showFilters 
+          ? 'grid-cols-1 sm:grid-cols-2' 
+          : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
+      }`}>
+        {announcements.map((room) => (
             <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:scale-[1.02] transition-transform border border-gray-100">
               {room.image && (
                 <div className="w-full h-40 relative">
@@ -312,6 +443,19 @@ export default function RoomListPage() {
                   </span>
                   {room.vagas && room.status === "Disponível" && (
                     <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-semibold">Vagas: {room.vagas}</span>
+                  )}
+                  {room.sex_restriction && (
+                    <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                      room.sex_restriction === "male" 
+                        ? "bg-blue-100 text-blue-800" 
+                        : room.sex_restriction === "female"
+                        ? "bg-pink-100 text-pink-800"
+                        : "bg-purple-100 text-purple-800"
+                    }`}>
+                      {room.sex_restriction === "male" ? "👨 Apenas Masculino" : 
+                       room.sex_restriction === "female" ? "👩 Apenas Feminino" : 
+                       "👥 Ambos"}
+                    </span>
                   )}
                 </div>
                 <p className="font-bold text-lg text-gray-900 mb-2">{room.price}</p>
@@ -337,7 +481,9 @@ export default function RoomListPage() {
             </div>
           ))}
         </div>
-      </div>
+      )}
     </div>
+  </div>
+</div>
   );
 }
