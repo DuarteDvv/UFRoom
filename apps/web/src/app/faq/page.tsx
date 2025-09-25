@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Header from "../../components/Header";
+import { useAuth } from "../../global-contexts/authcontext";
 
 type ChatIntent = "complaint" | "question";
 
@@ -29,6 +30,11 @@ const assistantGreetingMessages = [
 const generateId = (prefix: string) =>
 	`${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
+const generateThreadId = () => {
+	const hasCrypto = typeof crypto !== "undefined" && typeof crypto.randomUUID === "function";
+	return hasCrypto ? crypto.randomUUID() : generateId("thread");
+};
+
 const createInitialMessages = (): ChatMessage[] =>
 	assistantGreetingMessages.map(({ prefix, text }) => ({
 		id: generateId(prefix),
@@ -37,23 +43,6 @@ const createInitialMessages = (): ChatMessage[] =>
 		createdAt: formatTime(new Date()),
 	}));
 
-const responsePools = {
-	complaint: [
-		"Entendi sua reclamação. Registrei o protocolo inicial e nossa equipe irá analisar em até 24 horas.",
-		"Obrigado por sinalizar o problema. Você pode anexar fotos ou documentos respondendo a esta conversa, se necessário.",
-		"Estamos comprometidos em resolver esse tipo de situação rapidamente. Assim que houver atualização, avisaremos aqui no chat.",
-	],
-	question: [
-		"Ótima pergunta! Estou buscando as informações e já volto com uma resposta detalhada.",
-		"Posso ajudar com isso. Enquanto isso, verifique também se a resposta já está na nossa central de ajuda.",
-		"Agradeço a pergunta. Vou consultar nossa base de conhecimento e retorno em instantes.",
-	],
-	neutral: [
-		"Estou aqui para ajudar. Conte-me com mais detalhes para que eu possa direcionar corretamente.",
-		"Obrigada por compartilhar. Já estou analisando e retorno em breve.",
-	],
-};
-
 const quickPrompts = [
 	"Quero reportar um problema com o anúncio",
 	"Como acompanho o status da minha reclamação?",
@@ -61,22 +50,94 @@ const quickPrompts = [
 	"Tenho dúvidas sobre pagamentos",
 ];
 
+const SUPPORT_API_URL =
+	process.env.NEXT_PUBLIC_SUPPORT_API_URL || "http://127.0.0.1:8000/answer";
+
+const SUPPORT_CLEAR_THREADS_URL = (() => {
+	try {
+		const base = new URL(SUPPORT_API_URL);
+		base.pathname = "/threads/clear";
+		base.search = "";
+		return base.toString();
+	} catch (error) {
+		console.error("Failed to derive clear threads URL", error);
+		return "http://127.0.0.1:8000/threads/clear";
+	}
+})();
+
 export default function FaqChatPage() {
 	const [messages, setMessages] = useState<ChatMessage[]>(() => createInitialMessages());
 	const [intent, setIntent] = useState<ChatIntent | null>(null);
 	const [inputValue, setInputValue] = useState("");
 	const [isBotTyping, setIsBotTyping] = useState(false);
+	const [lastError, setLastError] = useState<string | null>(null);
 
 	const messageListRef = useRef<HTMLDivElement>(null);
-	const typingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const sessionThreadIdsRef = useRef<{ complaint: string; question: string } | null>(null);
+	const { user } = useAuth() ?? {};
+
+	const resolvedUserName = useMemo(() => {
+		const name = user?.name;
+		if (typeof name === "string" && name.trim().length > 0) {
+			return name.trim();
+		}
+		return "Visitante";
+	}, [user?.name]);
 
 	useEffect(() => {
-		return () => {
-			if (typingTimeoutRef.current) {
-				clearTimeout(typingTimeoutRef.current);
-			}
-		};
+		if (!sessionThreadIdsRef.current) {
+			sessionThreadIdsRef.current = {
+				complaint: generateThreadId(),
+				question: generateThreadId(),
+			};
+		}
 	}, []);
+
+	const flushThreadHistory = useCallback(() => {
+		if (typeof window === "undefined") return;
+		const threadIds = sessionThreadIdsRef.current;
+		if (!threadIds) return;
+		const payload = JSON.stringify({
+			thread_ids: [threadIds.complaint, threadIds.question].filter(Boolean),
+		});
+		if (payload === '{"thread_ids":[]}') return;
+		try {
+			if (navigator?.sendBeacon) {
+				const blob = new Blob([payload], { type: "application/json" });
+				navigator.sendBeacon(SUPPORT_CLEAR_THREADS_URL, blob);
+			} else {
+				void fetch(SUPPORT_CLEAR_THREADS_URL, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: payload,
+					keepalive: true,
+				}).catch(() => {
+					/* swallow network errors on unload */
+				});
+			}
+		} catch (error) {
+			console.error("Failed to flush thread history", error);
+		}
+	}, []);
+
+	useEffect(() => {
+		const handleBeforeUnload = () => {
+			flushThreadHistory();
+		};
+
+		if (typeof window !== "undefined") {
+			window.addEventListener("beforeunload", handleBeforeUnload);
+		}
+
+		return () => {
+			if (typeof window !== "undefined") {
+				window.removeEventListener("beforeunload", handleBeforeUnload);
+			}
+			flushThreadHistory();
+		};
+	}, [flushThreadHistory]);
 
 	useEffect(() => {
 		if (messageListRef.current) {
@@ -97,38 +158,91 @@ export default function FaqChatPage() {
 		[]
 	);
 
-	const appendMessage = (message: ChatMessage) => {
+	const appendMessage = useCallback((message: ChatMessage) => {
 		setMessages((prev) => [...prev, message]);
-	};
+	}, []);
 
-	const simulateAssistantReply = (currentIntent: ChatIntent | null) => {
-		setIsBotTyping(true);
+	const resolveSupportType = useCallback(
+		(currentIntent: ChatIntent | null) =>
+			currentIntent === "complaint" ? "reclamacoes" : "duvidas",
+		[]
+	);
 
-		const pool = currentIntent
-			? responsePools[currentIntent]
-			: responsePools.neutral;
-		const reply = pool[Math.floor(Math.random() * pool.length)];
+	const resolveThreadId = useCallback(
+		(currentIntent: ChatIntent | null) => {
+			const threadIds = sessionThreadIdsRef.current;
+			if (!threadIds) {
+				return generateThreadId();
+			}
+			if (currentIntent === "complaint") {
+				return threadIds.complaint;
+			}
+			return threadIds.question;
+		},
+		[]
+	);
 
-		typingTimeoutRef.current = setTimeout(() => {
-			appendMessage({
-				id: `assistant-${Date.now()}`,
-				sender: "assistant",
-				text: reply,
-				createdAt: formatTime(new Date()),
-			});
-			setIsBotTyping(false);
-		}, 900 + Math.random() * 600);
-	};
+	const requestAssistantReply = useCallback(
+		async (currentIntent: ChatIntent | null, userMessage: string) => {
+			setIsBotTyping(true);
+			setLastError(null);
+			try {
+				const response = await fetch(SUPPORT_API_URL, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+					},
+					body: JSON.stringify({
+						message: userMessage,
+						user_name: resolvedUserName,
+						type: resolveSupportType(currentIntent),
+						thread_id: resolveThreadId(currentIntent),
+					}),
+				});
+				if (!response.ok) {
+					throw new Error(`Resposta inválida: ${response.status}`);
+				}
+				const data = await response.json();
+				const answer = (data?.resposta ?? "").toString().trim();
+				appendMessage({
+					id: generateId("assistant-response"),
+					sender: "assistant",
+					text:
+						answer ||
+						"Não consegui obter uma resposta agora. Pode tentar novamente em instantes?",
+					createdAt: formatTime(new Date()),
+				});
+			} catch (error) {
+				console.error("Chat request error:", error);
+				const friendlyError =
+					"Estamos com instabilidade no atendimento automático. Tente novamente em alguns minutos.";
+				setLastError(friendlyError);
+				appendMessage({
+					id: generateId("assistant-error"),
+					sender: "assistant",
+					text: friendlyError,
+					createdAt: formatTime(new Date()),
+				});
+			} finally {
+				setIsBotTyping(false);
+			}
+		},
+		[appendMessage, resolveSupportType, resolveThreadId, resolvedUserName]
+	);
+
+	const resetChat = useCallback(() => {
+		setMessages(createInitialMessages());
+		setIntent(null);
+		setInputValue("");
+		setIsBotTyping(false);
+		setLastError(null);
+	}, []);
 
 	const handleIntentChange = (value: ChatIntent) => {
-		if (typingTimeoutRef.current) {
-			clearTimeout(typingTimeoutRef.current);
-			typingTimeoutRef.current = null;
-		}
-
 		setIsBotTyping(false);
 		setInputValue("");
 		setIntent(value);
+		setLastError(null);
 
 		const resetMessages = createInitialMessages();
 		const introMessage: ChatMessage = {
@@ -141,9 +255,9 @@ export default function FaqChatPage() {
 		setMessages([...resetMessages, introMessage]);
 	};
 
-	const handleSendMessage = (text: string) => {
+	const handleSendMessage = async (text: string) => {
 		const trimmed = text.trim();
-		if (!trimmed) return;
+		if (!trimmed || isBotTyping) return;
 
 		appendMessage({
 			id: `user-${Date.now()}`,
@@ -153,17 +267,17 @@ export default function FaqChatPage() {
 		});
 
 		setInputValue("");
-		simulateAssistantReply(intent);
+		await requestAssistantReply(intent, trimmed);
 	};
 
-	const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+	const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 		event.preventDefault();
-		handleSendMessage(inputValue);
+		await handleSendMessage(inputValue);
 	};
 
-	const handleQuickPrompt = (prompt: string) => {
+	const handleQuickPrompt = async (prompt: string) => {
 		setInputValue("");
-		handleSendMessage(prompt);
+		await handleSendMessage(prompt);
 	};
 
 	return (
@@ -181,6 +295,15 @@ export default function FaqChatPage() {
 					<p className="mt-3 text-base text-gray-600 md:text-lg">
 						Resolva questões com a equipe UFRoom em tempo real. Compartilhe o que está acontecendo e receba orientações sem sair da página.
 					</p>
+					<div className="mt-6 inline-flex max-w-2xl items-start gap-3 rounded-2xl border border-amber-300 bg-amber-50 px-4 py-3 text-left text-sm text-amber-800">
+						<span className="mt-[3px] inline-flex h-2.5 w-2.5 rounded-full bg-amber-400"></span>
+						<div>
+							<strong className="block font-semibold">Atenção</strong>
+							<p>
+								Não feche o chat nem altere o objetivo enquanto conversa: o histórico pode ser perdido e será necessário começar novamente.
+							</p>
+						</div>
+					</div>
 				</div>
 
 				<div className="grid gap-8 lg:grid-cols-[320px_1fr]">
@@ -265,6 +388,23 @@ export default function FaqChatPage() {
 								</span>
 							</header>
 
+							<div className="mt-3 flex justify-between text-xs text-gray-500">
+								<span>
+									{intent === "complaint"
+										? "Objetivo selecionado: Reclamações"
+										: intent === "question"
+										? "Objetivo selecionado: Dúvidas"
+										: "Selecione um objetivo para personalizar o atendimento"}
+								</span>
+								<button
+									onClick={resetChat}
+									className="font-semibold text-red-600 transition hover:text-red-700"
+									type="button"
+								>
+									Reiniciar chat
+								</button>
+							</div>
+
 							<div
 								ref={messageListRef}
 								className="mt-6 flex-1 space-y-4 overflow-y-auto pr-2"
@@ -313,6 +453,11 @@ export default function FaqChatPage() {
 							</div>
 
 							<div className="mt-6 border-t border-gray-100 pt-4">
+								{lastError && (
+									<div className="mb-3 rounded-xl bg-red-50 px-4 py-2 text-xs font-semibold text-red-600">
+										{lastError}
+									</div>
+								)}
 								<div className="mb-3 flex flex-wrap gap-2">
 									{quickPrompts.map((prompt) => (
 										<button
@@ -338,7 +483,7 @@ export default function FaqChatPage() {
 									<button
 										type="submit"
 										className="flex items-center justify-center rounded-full bg-red-600 p-3 text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-										disabled={!inputValue.trim()}
+										disabled={!inputValue.trim() || isBotTyping}
 										aria-label="Enviar mensagem"
 									>
 										<svg

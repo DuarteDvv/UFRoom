@@ -1,62 +1,47 @@
-## Install and update NODE.JS
+#### Passos para instanciação
 
+- Instale o emulador NODE mais recente
+```bash
 sudo apt install curl
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash
-- Close and open terminal
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.3/install.sh | bash (feche e abra o depois de executar)
 nvm node install
-
-#### Instalar e subir ElasticSearch em um container Local 
-
-sudo curl -fsSL https://elastic.co/start-local | sudo sh
-
-#### Listar todos os containers (ligados ou não)
-
-docker ps -a
-
-#### Subir banco de dados
-
-```bash
-docker compose up postgres -d
 ```
-
-#### Desligar banco de dados (sem apagar dados)
-
-```bash
-docker stop <container_id>
-```
-#### Apagar volume
-
-```bash
-docker volume rm <nome_do_volume>
-```
-
-#### Apagar banco de dados
-
-```bash
-docker rm -v <container_id> 
-```
-
-#### Pull do schema 
-
-```bash
-npx prisma db pull
-```
-
-#### Gerar cliente Prisma
-
-```bash
-npx prisma generate
-```
-#### Instalar dependências
+- execute npm install para baixar as dependencias 
 
 ```bash
 npm install
 ```
 
-#### Rodar o servidor
+- Instale o docker usando tutorial do site
+- Na pasta apps/db execute o comando que sobe um container do banco do elasticsearch local
+- Ao final ele irá te retornar a chave da api local (não é uma chave importante pois é gerada aleatóriamente em cada criação de container)
 
 ```bash
-npm run start:dev
+sudo curl -fsSL https://elastic.co/start-local | sudo sh
+```
+- Seguindo o .env exemplo
+- Coloque a chave da elasticsearch no .env
+- Crie e coloque a chave do google maps API no .env
+- Coloque a string de conexão com o banco de dados 
+
+- Na raiz do projeto  suba o container do banco POSTGRES
+
+```bash
+docker compose up postgres -d
+```
+
+- Na pasta db/scripts instale o tsx e execute na ordem. O primeiro cria o indice no elastic e o segundo mocka alguns dados (O segundo só é necessário enquanto alguém não criar dados mockados melhores) (Coloque sua ES_API_KEY nos scripts)
+
+```bash
+
+npx tsx scripts/init_elasticsearch_index.ts
+
+npx tsx scripts/mock_elasticsearch_index.ts
+
+```
+
+- Inicie o servidor
+
+```bash
+npm start
 ``` 
-#### Testar a API
-Acesse `http://localhost:3000` no seu navegador ou use uma ferramenta como Postman ou cURL para testar os endpoints da API.

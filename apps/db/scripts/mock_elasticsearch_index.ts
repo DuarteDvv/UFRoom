@@ -3,7 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 const elasticsearch = new Client({
   node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
   auth: {
-    apiKey: process.env.ES_LOCAL_API_KEY || 'NVpDamQ1a0J5cm1DclRoeEpKUEM6OHcwYTNSanBjNndJYnFNZG0tbEZpQQ=='
+    apiKey: 'NVpDamQ1a0J5cm1DclRoeEpKUEM6OHcwYTNSanBjNndJYnFNZG0tbEZpQQ=='
   }
 });
 

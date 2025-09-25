@@ -36,10 +36,3 @@ Funcionalidades no escopo do usuário que busca uma acomodação:
 </p>
 
 
-npm start
-
-npm run dev
-
-sudo docker compose up postgres
-
-curl -fsSL https://elastic.co/start-local | sudo sh
