@@ -5,8 +5,14 @@ import { useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Header from '../../components/Header';
+import SearchAutocomplete from '../../components/SearchAutocomplete';
+import React, { useRef } from "react";
+import { useLoadScript } from "@react-google-maps/api";
+
+const libraries: ("places")[] = ["places"];
 
 const PAGE_SIZE = 10;
+
 
 type AnnounceSnippet = {
   id: number;
@@ -19,7 +25,6 @@ type AnnounceSnippet = {
   sex_restriction?: string; // restrição de sexo
   near_university?: string[];
   distance_to_university?: string[];
-  updated_at?: string; // dias desde a última atualização
 };
 
 export default function RoomListPage() {
@@ -38,9 +43,71 @@ export default function RoomListPage() {
     sex_restriction: "",
     near_university: "",
     location: "",
+    location_coords: null as { lat: number; lng: number } | null, // coordenadas para busca por distância
   });
 
-  // Carregar parâmetros da URL quando o componente monta ou URL muda
+  const locationInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
+    libraries
+  });
+
+  // autocomplete do google maps
+  useEffect(() => {
+    if (!isLoaded || loadError || !locationInputRef.current) return;
+
+    const options: google.maps.places.AutocompleteOptions = {
+      componentRestrictions: { country: "br" }, 
+      fields: ["formatted_address", "geometry", "name", "place_id"],
+      types: ["address"] 
+    };
+
+    autocompleteRef.current = new google.maps.places.Autocomplete(
+      locationInputRef.current, 
+      options
+    );
+
+    // quando um local é selecionado
+    const listener = autocompleteRef.current.addListener("place_changed", () => {
+      const place = autocompleteRef.current?.getPlace();
+      
+      if (place && place.geometry && place.geometry.location) {
+        const coordinates = {
+          lat: place.geometry.location.lat(),
+          lng: place.geometry.location.lng()
+        };
+        
+        const address = place.formatted_address || place.name || "";
+        
+        // salvando endereço e coordenadas
+        setFilters(prev => ({ 
+          ...prev, 
+          location: address,
+          location_coords: coordinates 
+        }));
+        
+        console.log('🗺️ Local selecionado via Google Places:', {
+          address,
+          coordinates,
+          place_id: place.place_id
+        });
+        console.log('✅ Coordenadas definidas:', coordinates);
+        
+        
+      }
+    });
+
+
+    return () => {
+      if (listener && window.google?.maps?.event) {
+        window.google.maps.event.removeListener(listener);
+      }
+    };
+  }, [isLoaded, loadError]);
+
+  // carregar parâmetros da URL quando o componente monta ou URL muda
   useEffect(() => {
     const urlQuery = searchParams.get('q') || '';
     const urlMaxPrice = searchParams.get('max_price') || '';
@@ -50,6 +117,8 @@ export default function RoomListPage() {
     const urlSexRestriction = searchParams.get('sex_restriction') || '';
     const urlNearUniversity = searchParams.get('near_university') || '';
     const urlLocation = searchParams.get('location') || '';
+    const urlLocationLat = searchParams.get('location_lat');
+    const urlLocationLng = searchParams.get('location_lng');
 
     const newFilters = {
       max_price: urlMaxPrice,
@@ -59,12 +128,12 @@ export default function RoomListPage() {
       sex_restriction: urlSexRestriction,
       near_university: urlNearUniversity,
       location: urlLocation,
+      location_coords: (urlLocationLat && urlLocationLng) ? { lat: parseFloat(urlLocationLat), lng: parseFloat(urlLocationLng) } : null,  
     };
 
     setQuery(urlQuery);
     setFilters(newFilters);
 
-    // Fazer a busca diretamente aqui sem chamar handleSearchOrFilter
     performSearch(urlQuery, newFilters);
   }, [searchParams]);
 
@@ -79,12 +148,15 @@ export default function RoomListPage() {
     if (newFilters.sex_restriction) params.set('sex_restriction', newFilters.sex_restriction);
     if (newFilters.near_university) params.set('near_university', newFilters.near_university);
     if (newFilters.location) params.set('location', newFilters.location);
+    if (newFilters.location_coords) {
+      params.set('location_lat', newFilters.location_coords.lat.toString());
+      params.set('location_lng', newFilters.location_coords.lng.toString());
+    }
 
     const newURL = params.toString() ? `/search?${params.toString()}` : '/search';
     router.push(newURL);
   };
 
-  // Função para fazer a busca sem atualizar a URL
   const performSearch = async (searchQuery: string, searchFilters: typeof filters) => {
     try {
       const res = await fetch('http://localhost:3001/api/search', {
@@ -96,7 +168,7 @@ export default function RoomListPage() {
       console.log('Response status:', res.status);
       console.log('Response headers:', res.headers.get('content-type'));
       
-      // Verificar se a resposta é JSON
+   
       const contentType = res.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
         const text = await res.text();
@@ -130,13 +202,33 @@ export default function RoomListPage() {
   const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     
-   
+    // Validação para campos numéricos
     if (name === 'max_price' || name === 'open_vac') {
-      
       if (value === '' || (/^\d+$/.test(value))) {
         setFilters({ ...filters, [name]: value });
       }
-      
+      return;
+    }
+    
+    // Se o usuário digitar/modificar o campo location
+    if (name === 'location') {
+      // Se o campo está vazio, limpar coordenadas
+      if (value.trim() === '') {
+        console.log('🗑️ Campo de endereço vazio - limpando coordenadas');
+        setFilters({ 
+          ...filters, 
+          location: '',
+          location_coords: null 
+        });
+      } else {
+        // Se o usuário digitar manualmente, limpar coordenadas (para forçar nova seleção via autocomplete)
+        console.log('🗑️ Usuario digitou manualmente - limpando coordenadas');
+        setFilters({ 
+          ...filters, 
+          location: value,
+          location_coords: null 
+        });
+      }
       return;
     }
     
@@ -180,18 +272,12 @@ export default function RoomListPage() {
           <div className="flex justify-center">
             <form onSubmit={handleSearchOrFilter} className="w-full max-w-3xl flex gap-0 items-center">
             <div className="flex-1 flex items-center bg-white rounded-l-full shadow px-6 py-1">
-              <span className="pr-2 text-gray-400">
-                {/* Ícone de lupa SVG */}
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
-                </svg>
-              </span>
-              <input
-                type="text"
+              <SearchAutocomplete
                 value={query}
-                onChange={e => setQuery(e.target.value)}
+                onChange={setQuery}
+                onSubmit={() => handleSearchOrFilter()}
                 placeholder="Buscar propriedades"
-                className="flex-1 p-2 border-none focus:outline-none bg-transparent text-gray-700 rounded-l-full"
+                className="rounded-l-full"
               />
             </div>
             <button
@@ -337,15 +423,29 @@ export default function RoomListPage() {
             </div>
             {/* Localização */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Localização</label>
-              <input
-                type="text"
-                name="location"
-                value={filters.location}
-                onChange={handleFilterChange}
-                placeholder="Bairro, rua, ponto de referência..."
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
-              />
+              <label className="block text-sm font-semibold text-gray-700 mb-1"> Localização </label>
+              {loadError ? (
+                <input
+                  type="text"
+                  name="location"
+                  value={filters.location}
+                  onChange={handleFilterChange}
+                  placeholder="Erro ao carregar Google Maps - use busca manual"
+                  className="w-full p-2 border border-red-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+                />
+              ) : (
+                <input
+                  ref={locationInputRef}
+                  type="text"
+                  name="location"
+                  value={filters.location}
+                  onChange={handleFilterChange}
+                  placeholder={isLoaded ? "Digite um endereço..." : "Carregando Google Maps..."}
+                  className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
+                  autoComplete="off"
+                  disabled={!isLoaded && !loadError}
+                />
+              )}
             </div>
             <button
               onClick={() => updateURL(query, filters)}
@@ -405,6 +505,7 @@ export default function RoomListPage() {
                 sex_restriction: "",
                 near_university: "",
                 location: "",
+                location_coords: null
               };
               setQuery("");
               setFilters(newFilters);

@@ -10,6 +10,13 @@ export const SearchSchema = Type.Object({
     sex_restriction: Type.Optional(Type.String()),
     near_university: Type.Optional(Type.String()),
     location: Type.Optional(Type.String()),
+    location_coords: Type.Optional(Type.Union([
+      Type.Object({
+        lat: Type.Number(),
+        lng: Type.Number()
+      }),
+      Type.Null()
+    ]))
   })),
 });
 

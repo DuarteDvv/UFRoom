@@ -13,6 +13,7 @@ import addressRoutes from './routes/address'
 import authRoutes from './routes/auth'
 import ownerRoutes from './routes/owner'
 import searchRoutes from './routes/search'
+import autocompleteRoutes from './routes/autocomplete'
 
 
 // Tipos
@@ -98,7 +99,8 @@ async function createServer(options: ServerOptions = {}) {
   await server.register(addressRoutes)
   await server.register(authRoutes)
   await server.register(ownerRoutes)
-  await server.register(searchRoutes) 
+  await server.register(searchRoutes)
+  await server.register(autocompleteRoutes) 
 
   return server
 }

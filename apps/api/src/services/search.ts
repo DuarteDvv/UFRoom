@@ -131,13 +131,16 @@ export async function searchRooms(
       });
     }
 
-    // 7. FILTRO DE LOCALIZAÇÃO (match/wildcard para busca textual)
-    if (filters.location && filters.location.length > 0) {
+    // 7. FILTRO DE LOCALIZAÇÃO (buscar os anúncios próximos a uma coordenada)
+    if (filters.location_coords && filters.location_coords !== null) {
+      
       esQuery.body.query.bool.filter.push({
-        multi_match: {
-          query: filters.location,
-          fields: ["address", "neighborhood", "city"],
-          fuzziness: "AUTO"
+        geo_distance: {
+          distance: "20km", // distância máxima (raio)
+          location: {
+            lat: filters.location_coords.lat,
+            lon: filters.location_coords.lng
+          }
         }
       });
     }
@@ -160,7 +163,6 @@ export async function searchRooms(
     sex_restriction: room.sex_restriction,
     near_university: room.universities?.map((u: any) => u.abbreviation) || [],
     distance_to_university: room.universities?.map((u: any) => `${u.distance} km`) || [],
-    updated_at: room.updated_at
   }));
 
   console.log('Search Results:', JSON.stringify(rooms_raw, null, 2));
