@@ -18,6 +18,10 @@ export const SearchSchema = Type.Object({
       Type.Null()
     ]))
   })),
+  pagination: Type.Optional(Type.Object({
+    cursor: Type.Optional(Type.String()), // Base64 encoded cursor for pagination
+    limit: Type.Optional(Type.Number({ minimum: 1, maximum: 100, default: 20 })) // Number of results per page
+  }))
 });
 
 export type SearchType = Static<typeof SearchSchema>;

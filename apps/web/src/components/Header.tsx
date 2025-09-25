@@ -8,8 +8,9 @@ export default function Header() {
   const navLinks = [
     { name: 'Pagina Inicial', href: '/home' },
     { name: 'Anuncie sua propriedade', href: '/login' },
-    { name: 'Regras', href: '/rules' },
-    { name: 'Contatos', href: '/contact' },
+    { name: 'Boa conduta', href: '/rules' },
+    { name: 'Sobre nós', href: '/about' },
+    { name: 'FAQ', href: '/faq' },
     
   ];
 

@@ -9,12 +9,12 @@ export async function search(
 {
 
   try {
-    const { results, total } = await SearchService.searchRooms(
+    const { results, pagination } = await SearchService.searchRooms(
         req.server,
         req.body
     );
     
-    return reply.send({ results, total});
+    return reply.send({ results, pagination });
   } catch (error) {
     console.error("Search error:", error);
     return reply.status(500).send({ error: "Internal Server Error" });

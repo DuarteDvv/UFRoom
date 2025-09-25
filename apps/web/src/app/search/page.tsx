@@ -11,7 +11,7 @@ import { useLoadScript } from "@react-google-maps/api";
 
 const libraries: ("places")[] = ["places"];
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 6;
 
 
 type AnnounceSnippet = {
@@ -33,7 +33,11 @@ export default function RoomListPage() {
 
   const [query, setQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [announcements, setAnnouncements] = useState<AnnounceSnippet[]>([]);
+  const [pageCache, setPageCache] = useState<Record<number, AnnounceSnippet[]>>({});
+  const [pageHasNext, setPageHasNext] = useState<Record<number, boolean>>({});
+  const [pageCursors, setPageCursors] = useState<Record<number, string | null>>({ 1: null });
+  const [isLoadingPage, setIsLoadingPage] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState({
     max_price: "",
@@ -53,6 +57,10 @@ export default function RoomListPage() {
     googleMapsApiKey: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || "",
     libraries
   });
+  const currentAnnouncements = pageCache[currentPage] ?? [];
+  const isFirstPage = currentPage === 1;
+  const canGoNext = Boolean(pageCache[currentPage + 1]) || Boolean(pageHasNext[currentPage]);
+  const isLastPage = !canGoNext;
 
   // autocomplete do google maps
   useEffect(() => {
@@ -134,7 +142,7 @@ export default function RoomListPage() {
     setQuery(urlQuery);
     setFilters(newFilters);
 
-    performSearch(urlQuery, newFilters);
+    performSearch(urlQuery, newFilters, { reset: true, page: 1 });
   }, [searchParams]);
 
   const updateURL = (newQuery: string, newFilters: typeof filters) => {
@@ -157,11 +165,30 @@ export default function RoomListPage() {
     router.push(newURL);
   };
 
-  const performSearch = async (searchQuery: string, searchFilters: typeof filters) => {
+  const performSearch = async (
+    searchQuery: string,
+    searchFilters: typeof filters,
+    options: { cursor?: string | null; page?: number; reset?: boolean } = {}
+  ) => {
+    const { cursor = null, page = 1, reset = false } = options;
     try {
+      setIsLoadingPage(true);
+      if (reset) {
+        setPageCache({});
+        setPageHasNext({});
+        setPageCursors({ 1: null });
+        setCurrentPage(1);
+      }
       const res = await fetch('http://localhost:3001/api/search', {
         method: 'POST',
-        body: JSON.stringify({ query: searchQuery, filters: searchFilters}),
+        body: JSON.stringify({
+          query: searchQuery,
+          filters: searchFilters,
+          pagination: {
+            limit: PAGE_SIZE,
+            ...(cursor ? { cursor } : {})
+          }
+        }),
         headers: { 'Content-Type': 'application/json' }
       });
 
@@ -183,10 +210,56 @@ export default function RoomListPage() {
 
       const data = await res.json();
       console.log('Search response:', data);
-      setAnnouncements(data.results);
+      const results: AnnounceSnippet[] = data.results || [];
+      const paginationInfo = data.pagination || {};
+
+      setPageCache(prev => {
+        const nextCache = reset ? {} : { ...prev };
+        nextCache[page] = results;
+        return nextCache;
+      });
+
+      setPageHasNext(prev => {
+        const nextStatus = reset ? {} : { ...prev };
+        nextStatus[page] = Boolean(paginationInfo.hasNextPage);
+        return nextStatus;
+      });
+
+      setPageCursors(prev => {
+        const nextCursors = reset ? { 1: null } : { ...prev };
+        nextCursors[page + 1] = paginationInfo.nextCursor || null;
+        return nextCursors;
+      });
+
+      setCurrentPage(page);
+      setHasSearched(true);
     } catch (error) {
       console.error('Search error:', error);
+    } finally {
+      setIsLoadingPage(false);
     }
+  };
+
+  const handlePreviousPage = () => {
+    if (isFirstPage || isLoadingPage) return;
+    setCurrentPage((prev) => Math.max(prev - 1, 1));
+  };
+
+  const handleNextPage = () => {
+    if (isLastPage || isLoadingPage) return;
+    const targetPage = currentPage + 1;
+    if (pageCache[targetPage]) {
+      setCurrentPage(targetPage);
+      return;
+    }
+
+    const cursor = pageCursors[targetPage];
+    if (!cursor) {
+      console.warn('No cursor available for next page, aborting fetch.');
+      return;
+    }
+
+    performSearch(query, filters, { cursor, page: targetPage });
   };
 
   const handleSearchOrFilter = async (e?: React.FormEvent) => {
@@ -460,7 +533,7 @@ export default function RoomListPage() {
   <div className={`flex-1 transition-all duration-300 ${
     showFilters ? 'ml-6' : 'ml-0'
   }`}>
-    {announcements.length === 0 ? (
+    {currentAnnouncements.length === 0 ? (
       /* Mensagem de nenhum resultado */
       <div className="flex flex-col items-center justify-center min-h-[500px] pt-16 text-center">
         <div className="bg-white rounded-2xl shadow-lg p-12 max-w-md mx-auto">
@@ -524,7 +597,7 @@ export default function RoomListPage() {
           ? 'grid-cols-1 sm:grid-cols-2' 
           : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
       }`}>
-        {announcements.map((room) => (
+        {currentAnnouncements.map((room) => (
             <div key={room.id} className="bg-white rounded-2xl shadow-lg overflow-hidden flex flex-col hover:scale-[1.02] transition-transform border border-gray-100">
               {room.image && (
                 <div className="w-full h-40 relative">
@@ -581,6 +654,42 @@ export default function RoomListPage() {
               </div>
             </div>
           ))}
+        </div>
+      )}
+      {(hasSearched && (currentPage > 1 || canGoNext)) && (
+        <div className="flex items-center justify-center mt-10 gap-4">
+          <button
+            onClick={handlePreviousPage}
+            disabled={isFirstPage || isLoadingPage}
+            className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
+              isFirstPage || isLoadingPage
+                ? 'border-red-200 text-red-200 cursor-not-allowed'
+                : 'border-red-600 text-red-600 hover:bg-red-600 hover:text-white'
+            }`}
+            aria-label="Página anterior"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5" />
+            </svg>
+          </button>
+          <span className="text-sm font-semibold text-gray-700">
+            Página {currentPage}
+            {!canGoNext && (currentAnnouncements.length > 0) ? '' : ''}
+          </span>
+          <button
+            onClick={handleNextPage}
+            disabled={isLastPage || isLoadingPage}
+            className={`flex items-center justify-center w-12 h-12 rounded-full border-2 transition-colors duration-200 ${
+              isLastPage || isLoadingPage
+                ? 'border-red-200 text-red-200 cursor-not-allowed'
+                : 'border-red-600 text-red-600 hover:bg-red-600 hover:text-white'
+            }`}
+            aria-label="Próxima página"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-6 h-6">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5" />
+            </svg>
+          </button>
         </div>
       )}
     </div>

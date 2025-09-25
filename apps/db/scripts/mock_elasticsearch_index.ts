@@ -30,6 +30,27 @@ const mockAnnouncements = [
       }
     ]
   },
+   {
+    id: 11,
+    title: "Quarto próximo à UFMG",
+    description: "Quarto amplo e bem iluminado, ideal para estudantes. Ambiente tranquilo e seguro.",
+    price: 800.0,
+    open_vac: 1,
+    rules: "Não fumar, não fazer barulho após 22h",
+    type_of: "individual_room",
+    status: "available",
+    sex_restriction: "both",
+    location: { lat: -19.8687, lon: -43.9609 },
+    image: "/house.jpg",
+    updated_at: new Date('2025-01-15T12:00:00'),
+    universities: [
+      {
+        name: "Universidade Federal de Minas Gerais",
+        abbreviation: "UFMG",
+        distance: 1.2
+      }
+    ]
+  },
   {
     id: 2,
     title: "Kitnet mobiliada no Savassi",

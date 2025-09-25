@@ -11,7 +11,11 @@ export async function searchRooms(
 
   const elastic_client = server.elasticsearch;
 
-  const { query, filters } = body;
+  const { query, filters, pagination } = body;
+  
+  // Default pagination values
+  const limit = pagination?.limit || 20;
+  const cursor = pagination?.cursor;
 
   const esQuery: any = {
     index: 'announcements',
@@ -22,12 +26,28 @@ export async function searchRooms(
           filter: [],
           should: []
         }
-      }
+      },
+      size: limit,
+      sort: [
+        { _score: { order: "desc" } }, 
+        { updated_at: { order: "desc" } }, 
+        { id: { order: "asc" } } 
+      ]
     }
   };
 
   console.log('Search Input:', JSON.stringify(body, null, 2));
 
+  // Process cursor for pagination
+  if (cursor) {
+    try {
+      const decodedCursor = JSON.parse(Buffer.from(cursor, 'base64').toString());
+      esQuery.body.search_after = decodedCursor;
+    } catch (error) {
+      console.error('Invalid cursor format:', error);
+      // Continue without cursor if invalid
+    }
+  }
 
   // dar maior peso para anuncios com status 'available' e mais recentes
   esQuery.body.query.bool.should.push(
@@ -150,7 +170,8 @@ export async function searchRooms(
 
   const searchResults = await elastic_client.search(esQuery);
 
-  const rooms_raw = searchResults.hits.hits.map((hit: any) => hit._source);
+  const hits = searchResults.hits.hits;
+  const rooms_raw = hits.map((hit: any) => hit._source);
 
   const rooms = rooms_raw.map((room: any) => ({
     id: room.id,
@@ -167,8 +188,24 @@ export async function searchRooms(
 
   console.log('Search Results:', JSON.stringify(rooms_raw, null, 2));
 
+  // Generate next cursor if we have results and they equal the limit (indicating there might be more)
+  let nextCursor: string | null = null;
+  if (hits.length === limit && hits.length > 0) {
+    const lastHit = hits[hits.length - 1];
+    const sortValues = lastHit.sort;
+    if (sortValues && sortValues.length > 0) {
+      nextCursor = Buffer.from(JSON.stringify(sortValues)).toString('base64');
+    }
+  }
+
   return {
-    results: rooms
+    results: rooms,
+    pagination: {
+      limit,
+      hasNextPage: nextCursor !== null,
+      nextCursor,
+      currentPageSize: rooms.length
+    }
   };
 }
 
