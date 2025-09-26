@@ -14,6 +14,7 @@ import authRoutes from './routes/auth'
 import ownerRoutes from './routes/owner'
 import searchRoutes from './routes/search'
 import autocompleteRoutes from './routes/autocomplete'
+import universityRoutes from './routes/university'
 
 
 // Tipos
@@ -101,6 +102,7 @@ async function createServer(options: ServerOptions = {}) {
   await server.register(ownerRoutes)
   await server.register(searchRoutes)
   await server.register(autocompleteRoutes) 
+  await server.register(universityRoutes)
 
   return server
 }

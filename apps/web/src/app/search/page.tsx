@@ -27,6 +27,12 @@ type AnnounceSnippet = {
   distance_to_university?: string[];
 };
 
+type UniversityOption = {
+  id: number;
+  name: string;
+  abbreviation: string | null;
+};
+
 export default function RoomListPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -39,6 +45,7 @@ export default function RoomListPage() {
   const [isLoadingPage, setIsLoadingPage] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
   const [showFilters, setShowFilters] = useState(true);
+  const [universities, setUniversities] = useState<UniversityOption[]>([]);
   const [filters, setFilters] = useState({
     max_price: "",
     open_vac: "",
@@ -61,6 +68,34 @@ export default function RoomListPage() {
   const isFirstPage = currentPage === 1;
   const canGoNext = Boolean(pageCache[currentPage + 1]) || Boolean(pageHasNext[currentPage]);
   const isLastPage = !canGoNext;
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchUniversities() {
+      try {
+        const res = await fetch("http://localhost:3001/api/universities", {
+          signal: controller.signal,
+        });
+        if (!res.ok) {
+          throw new Error(`Failed to load universities: ${res.status}`);
+        }
+        const data: UniversityOption[] = await res.json();
+        setUniversities(data);
+      } catch (error) {
+        if ((error as Error).name === "AbortError") {
+          return;
+        }
+        console.error("Erro ao carregar universidades:", error);
+      }
+    }
+
+    fetchUniversities();
+
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   // autocomplete do google maps
   useEffect(() => {
@@ -487,11 +522,14 @@ export default function RoomListPage() {
                 className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-200 text-gray-700"
               >
                 <option value="">Selecione</option>
-                <option value="UFMG CAMPUS 1">UFMG CAMPUS 1</option>
-                <option value="UFMG CAMPUS 2">UFMG CAMPUS 2</option>
-                <option value="UFMG">UFMG</option>
-                <option value="PUC">PUC</option>
-                <option value="PUC MINAS">PUC MINAS</option>
+                {universities.map((uni) => {
+                  const value = uni.abbreviation?.trim() || uni.name;
+                  return (
+                    <option key={uni.id} value={value}>
+                      {value}
+                    </option>
+                  );
+                })}
               </select>
             </div>
             {/* Localização */}
