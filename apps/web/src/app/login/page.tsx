@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 // useRouter permite navegação programática entre páginas.
-import { useState } from "react"; 
+import { useState, useEffect } from "react"; 
 // useState cria uma variável reativa dentro do componente. 
 // Ler: form, 
 // Atualizar: setForm(novoValor) 
@@ -30,6 +30,16 @@ export default function LoginPage() {
 
     const [showPassword, setShowPassword] = useState(false); //Estado para mostrar/ocultar senha
 
+    // useEffect para limpar a mensagem de erro após 5 segundos
+    useEffect(() => {
+        if (errorMessage) {
+            const timer = setTimeout(() => {
+                setErrorMessage("");
+            }, 5000); // 5 segundos
+
+            return () => clearTimeout(timer); // Limpa o timer se o componente for desmontado ou se errorMessage mudar
+        }
+    }, [errorMessage]);
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target; //Desestruturação do evento de mudança (change event)
@@ -73,12 +83,14 @@ export default function LoginPage() {
                 return;
             }
 
-            const data = await res.json();
+            const responsebody = await res.json();
+
+            const data = responsebody.data;
 
             setErrorMessage(""); // Limpa a mensagem de erro em caso de sucesso
 
-            await login( data.user, data.access_token );
-            router.push("/me");
+            await login(data.user, data.access_token );
+            router.push("/search");
             console.log(data);
         } 
         catch (err) {
@@ -169,6 +181,18 @@ export default function LoginPage() {
                             onClick={() => router.push('/forgot-password')}
                         >
                             Esqueci minha senha
+                        </button>
+                    </div>
+
+                    {/* Link para página de cadastro */}
+                    <div className="mt-2 text-center text-sm text-gray-600">
+                        Não é cliente?{" "}
+                        <button
+                            type="button"
+                            className="text-red-600 hover:underline font-semibold"
+                            onClick={() => router.push('/register')}
+                        >
+                            Cadastre-se
                         </button>
                     </div>
 
