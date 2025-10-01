@@ -1,13 +1,72 @@
-import { FastifyInstance } from 'fastify';
-import * as announcementController from "../controllers/announcement";
+import { FastifyInstance } from "fastify";
+import { 
+  createAnnouncement, 
+  getAnnouncements, 
+  getAnnouncementById,
+  updateAnnouncement,
+  deleteAnnouncement 
+} from "../controllers/announcement";
+import { 
+  Announcement, 
+  AnnouncementFilters, 
+  AnnouncementParams,
+  AnnouncementUpdate 
+} from "../schemas/announcement";
 
+export default async function announcementRoutes(fastify: FastifyInstance) {
+  // Create announcement
+  fastify.post(
+    "/announcements",
+    {
+      schema: {
+        body: Announcement,
+      },
+    },
+    createAnnouncement
+  );
 
+  // Get all announcements with filters
+  fastify.get(
+    "/announcements",
+    {
+      schema: {
+        querystring: AnnouncementFilters
+      }
+    },
+    getAnnouncements
+  );
 
-export default async function (fastify: FastifyInstance) {
+  // Get specific announcement by ID
+  fastify.get(
+    "/announcements/:id",
+    {
+      schema: {
+        params: AnnouncementParams
+      }
+    },
+    getAnnouncementById
+  );
 
-    fastify.post("/announcement", announcementController.createAnnouncement);
-    fastify.get("/announcement", announcementController.getAllAnnouncements);
+  // Update announcement
+  fastify.put(
+    "/announcements/:id",
+    {
+      schema: {
+        params: AnnouncementParams,
+        body: AnnouncementUpdate
+      }
+    },
+    updateAnnouncement
+  );
 
+  // Delete announcement
+  fastify.delete(
+    "/announcements/:id",
+    {
+      schema: {
+        params: AnnouncementParams
+      }
+    },
+    deleteAnnouncement
+  );
 }
-
-
