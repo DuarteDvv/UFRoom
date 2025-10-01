@@ -109,8 +109,6 @@ model university {
 enum announcement_status {
   paused
   rented
-  liberation
-  full
   available
 }
 
