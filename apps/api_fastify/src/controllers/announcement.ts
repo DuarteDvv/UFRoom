@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import * as AnnouncementService from "../services/announcement";
 import { 
   AnnouncementType, 
-  AnnouncementFiltersType, 
   AnnouncementParamsType,
   AnnouncementUpdateType 
 } from "../schemas/announcement";
@@ -24,15 +23,11 @@ export async function createAnnouncement(
 }
 
 export async function getAnnouncements(
-  req: FastifyRequest<{ Querystring: AnnouncementFiltersType }>,
+  req: FastifyRequest,
   reply: FastifyReply
 ) {
   try {
-    const filters = req.query;
-    const announcements = await AnnouncementService.getAnnouncements(
-      req.server, 
-      filters
-    );
+    const announcements = await AnnouncementService.getAnnouncements(req.server);
     return reply.code(200).send(announcements);
   } catch (error) {
     req.log.error(error, 'Error fetching announcements');

@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { 
   AnnouncementType, 
-  AnnouncementFiltersType,
   AnnouncementUpdateType 
 } from "../schemas/announcement";
 
@@ -27,55 +26,8 @@ export async function createAnnouncement(
   });
 }
 
-export async function getAnnouncements(
-  server: FastifyInstance,
-  filters: AnnouncementFiltersType
-) {
-  const {
-    sex_restriction,
-    type_of,
-    min_price,
-    max_price,
-    min_available_spots,
-    status = 'available',
-    page = 1,
-    limit = 20,
-    sort_by = 'created_at',
-    sort_order = 'desc'
-  } = filters;
-
-  // Construir filtros do Prisma
-  const where: any = {
-    status
-  };
-
-  if (sex_restriction) {
-    where.sex_restriction = sex_restriction;
-  }
-
-  if (type_of) {
-    where.type_of = type_of;
-  }
-
-  if (min_price !== undefined || max_price !== undefined) {
-    where.price = {};
-    if (min_price !== undefined) where.price.gte = min_price;
-    if (max_price !== undefined) where.price.lte = max_price;
-  }
-
-  // A DECIDIR: COMO IMPLEMENTAR FILTRO DE LOCALIZAÇÃO
-
-  const skip = (page - 1) * limit;
-
-  // Ordenação
-  const orderBy: any = {};
-  orderBy[sort_by] = sort_order;
-
-  let announcements = await server.prisma.announcement.findMany({
-    where,
-    skip,
-    take: limit,
-    orderBy,
+export async function getAnnouncements(server: FastifyInstance) {
+  return server.prisma.announcement.findMany({
     include: {
       address: true,
       owner: {
@@ -87,28 +39,11 @@ export async function getAnnouncements(
       announcement_img: {
         take: 1
       }
+    },
+    orderBy: {
+      created_at: 'desc'
     }
   });
-
-  // Filtrar por vagas disponíveis (pós-query)
-  // Vagas disponíveis = max_occupants - occupants
-  if (min_available_spots !== undefined) {
-    announcements = announcements.filter(a => 
-      (a.max_occupants - a.occupants) >= min_available_spots
-    );
-  }
-
-  const total = await server.prisma.announcement.count({ where });
-
-  return {
-    data: announcements,
-    pagination: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit)
-    }
-  };
 }
 
 export async function getAnnouncementById(

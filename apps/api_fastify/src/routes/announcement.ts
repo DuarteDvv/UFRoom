@@ -8,7 +8,6 @@ import {
 } from "../controllers/announcement";
 import { 
   Announcement, 
-  AnnouncementFilters, 
   AnnouncementParams,
   AnnouncementUpdate 
 } from "../schemas/announcement";
@@ -25,18 +24,8 @@ export default async function announcementRoutes(fastify: FastifyInstance) {
     createAnnouncement
   );
 
-  // Get all announcements with filters
-  fastify.get(
-    "/announcements",
-    {
-      schema: {
-        querystring: AnnouncementFilters
-      }
-    },
-    getAnnouncements
-  );
+  fastify.get("/announcements", getAnnouncements);
 
-  // Get specific announcement by ID
   fastify.get(
     "/announcements/:id",
     {
@@ -47,7 +36,6 @@ export default async function announcementRoutes(fastify: FastifyInstance) {
     getAnnouncementById
   );
 
-  // Update announcement
   fastify.put(
     "/announcements/:id",
     {
@@ -59,7 +47,6 @@ export default async function announcementRoutes(fastify: FastifyInstance) {
     updateAnnouncement
   );
 
-  // Delete announcement
   fastify.delete(
     "/announcements/:id",
     {
