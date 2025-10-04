@@ -67,27 +67,188 @@ TRUNCATE TABLE owner RESTART IDENTITY CASCADE;
 
 INSERT INTO owner (name, cpf, email, phone, img_url)
 VALUES
-('Ricardo Amorim', '07777575686', 'joao@example.com', '31971690890', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU6LJhJoA8NuNOdrYyLYEs-ne66rGSsHc_IVFv_OQpYtzKuQe5JLo_WVMYFc51wu8yGk8'),
-('Maria Oliveira', '22222222222', 'maria@example.com', '31988888888', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU6LJhJoA8NuNOdrYyLYEs-ne66rGSsHc_IVFv_OQpYtzKuQe5JLo_WVMYFc51wu8yGk8'),
-('Carlos Pereira', '33333333333', 'carlos@example.com', '31977777777', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRU6LJhJoA8NuNOdrYyLYEs-ne66rGSsHc_IVFv_OQpYtzKuQe5JLo_WVMYFc51wu8yGk8');
+-- Homens
+('Ricardo Amorim', '07777575686', 'ricardo@example.com', '31971690890', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/man1.png'),
+('Carlos Pereira', '33333333333', 'carlos@example.com', '31977777777', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/man2.png'),
+('João Silva', '44444444444', 'joao@example.com', '31966666666', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/man3.png'),
+('Pedro Santos', '55555555555', 'pedro@example.com', '31955555555', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/man4.png'),
+
+-- Mulheres
+('Maria Oliveira', '22222222222', 'maria@example.com', '31988888888', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/female1.png'),
+('Ana Costa', '66666666666', 'ana@example.com', '31944444444', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/female2.png'),
+('Beatriz Lima', '77777777777', 'beatriz@example.com', '31933333333', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/female3.png'),
+('Fernanda Rocha', '88888888888', 'fernanda@example.com', '31922222222', 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/pessoas/female4.png');
 
 TRUNCATE TABLE announcement RESTART IDENTITY CASCADE;
 INSERT INTO announcement (id_owner, price, occupants, max_occupants, description, type_of, status, title, sex_restriction, rules)
 VALUES
-(1, 1200.00, 0, 2, 'Kitnet aconchegante próxima à universidade', 'kitnet', 'available', 'Kitnet Estudantil', 'both', 'Não fumar'),
-(2, 800.00, 1, 1, 'Quarto individual, mobiliado', 'individual_room', 'available', 'Quarto Individual', 'female', 'Animais de estimação não permitidos'),
-(3, 1500.00, 0, 3, 'Apartamento compartilhado com 3 quartos', 'shared_room', 'available', 'Apartamento Compartilhado', 'both', 'Limite de ocupantes máximo: 3');
+(1, 1200.00, 0, 1, 'Kitnet aconchegante próxima à universidade', 'kitnet', 'available', 'Kitnet Estudantil', 'both', 'Não fumar'),
+(2, 1300.00, 1, 2, 'Kitnet moderna com varanda', 'kitnet', 'available', 'Kitnet com Varanda', 'both', 'Não animais'),
+(3, 1100.00, 0, 3, 'Kitnet silenciosa, ideal para estudar', 'kitnet', 'available', 'Kitnet Silenciosa', 'both', 'Não fumar'),
+(1, 1250.00, 0, 4, 'Kitnet mobiliada próxima ao metrô', 'kitnet', 'available', 'Kitnet Mobiliada', 'both', 'Sem festas'),
+(2, 1400.00, 0, 5, 'Kitnet com cozinha equipada', 'kitnet', 'available', 'Kitnet Cozinha', 'both', 'Não fumar'),
+(3, 1150.00, 1, 6, 'Kitnet compacta e bem iluminada', 'kitnet', 'available', 'Kitnet Compacta', 'both', 'Sem animais'),
+(1, 1350.00, 0, 7, 'Kitnet próxima a comércio e transporte', 'kitnet', 'available', 'Kitnet Central', 'both', 'Não fumar'),
+
+(2, 800.00, 1, 8, 'Quarto individual, mobiliado', 'individual_room', 'available', 'Quarto Individual', 'female', 'Animais de estimação não permitidos'),
+(3, 850.00, 0, 13, 'Quarto para estudante', 'individual_room', 'available', 'Quarto Estudante', 'male', 'Não fumar'),
+(1, 900.00, 1, 2, 'Quarto com armário grande', 'individual_room', 'available', 'Quarto com Armário', 'both', 'Sem festas'),
+(2, 700.00, 0, 3, 'Quarto em apartamento compartilhado', 'shared_room', 'available', 'Quarto Compartilhado', 'both', 'Limite de ocupantes máximo: 2'),
+(3, 750.00, 0, 4, 'Quarto compartilhado próximo à faculdade', 'shared_room', 'available', 'Quarto Compartilhado 3', 'both', 'Limite de ocupantes máximo: 3'),
+(1, 800.00, 0, 5, 'Quarto tranquilo e mobiliado', 'shared_room', 'available', 'Quarto Tranquilo', 'both', 'Não fumar'),
+(2, 950.00, 1, 6, 'Quarto individual com cama queen', 'individual_room', 'available', 'Quarto Queen', 'female', 'Não animais'),
+(3, 700.00, 0, 7, 'Quarto simples, bem iluminado', 'individual_room', 'available', 'Quarto Simples', 'male', 'Sem festas'),
+(1, 820.00, 0, 8, 'Quarto em apartamento compartilhado', 'shared_room', 'available', 'Quarto Compartilhado 2', 'both', 'Limite de ocupantes máximo: 2'),
+(2, 780.00, 0, 9, 'Quarto compartilhado com 2 colegas', 'shared_room', 'available', 'Quarto Compartilhado 4', 'both', 'Limite de ocupantes máximo: 3'),
+(3, 870.00, 0, 10, 'Quarto individual mobiliado', 'individual_room', 'available', 'Quarto Individual 2', 'female', 'Não fumar'),
+(1, 900.00, 1, 11, 'Quarto moderno e silencioso', 'individual_room', 'available', 'Quarto Moderno', 'both', 'Sem animais'),
+(2, 760.00, 0, 12, 'Quarto compartilhado com vista para o parque', 'shared_room', 'available', 'Quarto Compartilhado Vista', 'both', 'Limite de ocupantes máximo: 2');
+
 
 TRUNCATE TABLE announcement_img RESTART IDENTITY CASCADE;
 INSERT INTO announcement_img (id_announcement, img_url, order_idx, is_cover)
 VALUES
-(1, 'https://resizedimgs.zapimoveis.com.br/img/vr-listing/9a8cec0f41772f9642b8ae01dab2cfc5/apartamento-com-2-quartos-para-venda-ou-aluguel-65m-no-centro-jacarei.webp?action=fit-in&dimension=870x707', 0, true),
-(1, 'https://resizedimgs.zapimoveis.com.br/img/vr-listing/324a646a5590b7700e5beafc483af2a9/apartamento-com-2-quartos-para-venda-ou-aluguel-65m-no-centro-jacarei.webp?action=fit-in&dimension=870x707', 1, false),
-(1, 'https://resizedimgs.zapimoveis.com.br/img/vr-listing/0a2481e419c72ba00869a4c41f8284eb/apartamento-com-2-quartos-para-venda-ou-aluguel-65m-no-centro-jacarei.webp?action=fit-in&dimension=870x707', 2, false),
-(2, 'https://fastly.picsum.photos/id/25/5000/3333.jpg?hmac=yCz9LeSs-i72Ru0YvvpsoECnCTxZjzGde805gWrAHkM', 0, true),
-(3, 'https://fastly.picsum.photos/id/29/4000/2670.jpg?hmac=rCbRAl24FzrSzwlR5tL-Aqzyu5tX_PA95VJtnUXegGU', 0, true),
-(3, 'https://fastly.picsum.photos/id/28/4928/3264.jpg?hmac=GnYF-RnBUg44PFfU5pcw_Qs0ReOyStdnZ8MtQWJqTfA', 1, false),
-(3, 'https://fastly.picsum.photos/id/27/3264/1836.jpg?hmac=p3BVIgKKQpHhfGRRCbsi2MCAzw8mWBCayBsKxxtWO8g', 2, false);
+(1, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/1/1.png', 0, true),
+(1, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/1/2.png', 1, false),
+(1, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/1/3.png', 2, false),
+(1, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/1/4.png', 3, false),
+(1, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/1/5.png', 4, false),
+
+-- Anúncio 2
+(2, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/2/1.png', 0, true),
+(2, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/2/2.png', 1, false),
+(2, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/2/3.png', 2, false),
+(2, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/2/4.png', 3, false),
+(2, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/2/5.png', 4, false),
+
+-- Anúncio 3
+(3, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/3/1.png', 0, true),
+(3, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/3/2.png', 1, false),
+(3, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/3/3.png', 2, false),
+(3, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/3/4.png', 3, false),
+(3, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/3/5.png', 4, false),
+
+-- Anúncio 4
+(4, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/4/1.png', 0, true),
+(4, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/4/2.png', 1, false),
+(4, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/4/3.png', 2, false),
+(4, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/4/4.png', 3, false),
+(4, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/4/5.png', 4, false),
+
+-- Anúncio 5
+(5, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/5/1.png', 0, true),
+(5, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/5/2.png', 1, false),
+(5, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/5/3.png', 2, false),
+(5, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/5/4.png', 3, false),
+(5, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/5/5.png', 4, false),
+
+-- Anúncio 6
+(6, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/6/1.png', 0, true),
+(6, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/6/2.png', 1, false),
+(6, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/6/3.png', 2, false),
+(6, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/6/4.png', 3, false),
+(6, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/6/5.png', 4, false),
+
+-- Anúncio 7
+(7, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/7/1.png', 0, true),
+(7, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/7/2.png', 1, false),
+(7, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/7/3.png', 2, false),
+(7, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/7/4.png', 3, false),
+(7, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/kitnets/7/5.png', 4, false),
+
+-- Quartos (13 anúncios, 5 imagens cada)
+-- Anúncio 8
+(8, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/1/1.png', 0, true),
+(8, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/1/2.png', 1, false),
+(8, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/1/3.png', 2, false),
+(8, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/1/4.png', 3, false),
+(8, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/1/5.png', 4, false),
+
+-- Anúncio 9
+(9, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/2/1.png', 0, true),
+(9, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/2/2.png', 1, false),
+(9, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/2/3.png', 2, false),
+(9, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/2/4.png', 3, false),
+(9, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/2/5.png', 4, false),
+
+-- Anúncio 10
+(10, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/3/1.png', 0, true),
+(10, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/3/2.png', 1, false),
+(10, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/3/3.png', 2, false),
+(10, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/3/4.png', 3, false),
+(10, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/3/5.png', 4, false),
+
+-- Anúncio 11
+(11, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/4/1.png', 0, true),
+(11, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/4/2.png', 1, false),
+(11, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/4/3.png', 2, false),
+(11, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/4/4.png', 3, false),
+(11, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/4/5.png', 4, false),
+
+-- Anúncio 12
+(12, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/5/1.png', 0, true),
+(12, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/5/2.png', 1, false),
+(12, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/5/3.png', 2, false),
+(12, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/5/4.png', 3, false),
+(12, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/5/5.png', 4, false),
+
+-- Anúncio 13
+(13, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/6/1.png', 0, true),
+(13, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/6/2.png', 1, false),
+(13, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/6/3.png', 2, false),
+(13, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/6/4.png', 3, false),
+(13, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/6/5.png', 4, false),
+
+-- Anúncio 14
+(14, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/7/1.png', 0, true),
+(14, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/7/2.png', 1, false),
+(14, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/7/3.png', 2, false),
+(14, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/7/4.png', 3, false),
+(14, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/7/5.png', 4, false),
+
+-- Anúncio 15
+(15, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/8/1.png', 0, true),
+(15, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/8/2.png', 1, false),
+(15, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/8/3.png', 2, false),
+(15, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/8/4.png', 3, false),
+(15, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/8/5.png', 4, false),
+
+-- Anúncio 16
+(16, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/9/1.png', 0, true),
+(16, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/9/2.png', 1, false),
+(16, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/9/3.png', 2, false),
+(16, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/9/4.png', 3, false),
+(16, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/9/5.png', 4, false),
+
+-- Anúncio 17
+(17, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/10/1.png', 0, true),
+(17, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/10/2.png', 1, false),
+(17, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/10/3.png', 2, false),
+(17, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/10/4.png', 3, false),
+(17, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/10/5.png', 4, false),
+
+-- Anúncio 18
+(18, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/11/1.png', 0, true),
+(18, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/11/2.png', 1, false),
+(18, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/11/3.png', 2, false),
+(18, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/11/4.png', 3, false),
+(18, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/11/5.png', 4, false),
+
+-- Anúncio 19
+(19, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/12/1.png', 0, true),
+(19, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/12/2.png', 1, false),
+(19, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/12/3.png', 2, false),
+(19, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/12/4.png', 3, false),
+(19, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/12/5.png', 4, false),
+
+-- Anúncio 20
+(20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/1.png', 0, true),
+(20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/2.png', 1, false),
+(20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/3.png', 2, false),
+(20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/4.png', 3, false),
+(20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/5.png', 4, false);
+
+
 
 
 COMMIT;
