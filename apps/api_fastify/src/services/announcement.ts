@@ -58,7 +58,9 @@ export async function getAnnouncementById(
         select: {
           id: true,
           name: true,
-          email: true
+          email: true,
+          phone: true,
+          img_url: true
         }
       },
       announcement_img: true,

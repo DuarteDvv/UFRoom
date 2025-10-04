@@ -16,7 +16,7 @@ const AnnouncementPage = () => {
   useEffect(() => {
     const fetchAnnouncement = async () => {
       try {
-        const response = await fetch(`/api/announcements/${id}`);
+        const response = await fetch(`http://localhost:3001/announcements/${id}`);
         const data = await response.json();
         setAnnouncement(data);
       } catch (error) {
@@ -38,20 +38,33 @@ const AnnouncementPage = () => {
     }).format(price);
   };
 
+  // Função para formatar telefone
+  const formatPhone = (phone?: string) => {
+    if (!phone) return '';
+    const cleaned = phone.replace(/\D/g, ''); // remove tudo que não é número
+    if (cleaned.length === 11) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7)}`;
+    } else if (cleaned.length === 10) {
+      return `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`;
+    }
+    return phone; // fallback caso não seja 10 ou 11 dígitos
+  };
+
+
   const getTypeLabel = (type: string) => {
     const types = {
       'kitnet': 'Kitnet',
-      'quarto_individual': 'Quarto Individual',
-      'quarto_compartilhado': 'Quarto Compartilhado'
+      'individual_room': 'Quarto Individual',
+      'shared_room': 'Quarto Compartilhado'
     };
     return types[type as keyof typeof types] || type;
   };
 
   const getSexRestrictionLabel = (restriction: string) => {
     const restrictions = {
-      'male': 'Apenas Masculino',
-      'female': 'Apenas Feminino',
-      'both': 'Ambos os sexos'
+      'male': '👨 Apenas Masculino',
+      'female': '👩 Apenas Feminino',
+      'both': '👥 Ambos'
     };
     return restrictions[restriction as keyof typeof restrictions] || restriction;
   };
@@ -72,43 +85,8 @@ const AnnouncementPage = () => {
     }
   };
 
-  // Remover depois
-  const mockAnnouncement = {
-    id: parseInt(id as string),
-    title: "Kitnet mobiliada no Savassi",
-    price: 1200,
-    description: "Kitnet completamente mobiliada em excelente localização no Savassi. O imóvel conta com todos os móveis necessários para moradia estudantil, incluindo cama, guarda-roupa, mesa de estudos, geladeira e micro-ondas.",
-    occupants: 0,
-    max_occupants: 1,
-    type_of: "kitnet",
-    sex_restriction: "female",
-    rules: "• Não é permitido fumar no imóvel\n• Visitas até 22h\n• Manter o imóvel limpo",
-    created_at: "2024-01-15T10:00:00Z",
-    address: {
-      street: "Rua Pernambuco",
-      neighborhood: "Savassi",
-      state: "MG",
-      number: 123,
-      city: "Belo Horizonte",
-      cep: "30112-000"
-    },
-    owner: {
-      name: "Ana Silva",
-      email: "ana.silva@email.com",
-      phone: "(31) 99999-9999"
-    },
-    announcement_img: [
-      { id: 1, url: "/house.jpg", alt: "Sala principal" },
-      { id: 2, url: "/studio.jpg", alt: "Cozinha" }
-    ],
-    announcement_university: [
-      { id: 1, name: "PUC Minas", distance: 2.5 },
-      { id: 2, name: "UFMG", distance: 3.2 }
-    ]
-  };
 
-  // Use mock data se não houver dados da API ainda
-  const data = announcement || mockAnnouncement;
+  const data = announcement;
 
   if (loading) {
     return (
@@ -157,7 +135,7 @@ const AnnouncementPage = () => {
                   {data.announcement_img?.length > 0 ? (
                     <>
                       <Image
-                        src={data.announcement_img[currentImageIndex].url}
+                        src={data.announcement_img[currentImageIndex].img_url}
                         alt={data.announcement_img[currentImageIndex].alt || data.title}
                         fill
                         className="object-cover"
@@ -207,7 +185,7 @@ const AnnouncementPage = () => {
                         }`}
                       >
                         <Image
-                          src={img.url}
+                          src={img.img_url}
                           alt={img.alt || `Foto ${index + 1}`}
                           width={80}
                           height={80}
@@ -265,27 +243,41 @@ const AnnouncementPage = () => {
                     <div className="text-lg font-semibold text-gray-900">
                       {getSexRestrictionLabel(data.sex_restriction)}
                     </div>
-                    <div className="text-sm text-gray-500">Restrição</div>
+                    <div className="text-sm text-gray-500">Restrição de sexo</div>
                   </div>
                 </div>
 
                 {/* Descrição */}
                 {data.description && (
-                  <div className="mt-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Descrição</h2>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {data.description}
-                    </p>
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h7" />
+                      </svg>
+                      <h2 className="text-xl font-bold text-gray-900">Descrição</h2>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+                        {data.description}
+                      </p>
+                    </div>
                   </div>
                 )}
 
                 {/* Regras */}
                 {data.rules && (
-                  <div className="mt-6">
-                    <h2 className="text-lg font-semibold text-gray-900 mb-3">Regras</h2>
-                    <p className="text-gray-700 whitespace-pre-wrap leading-relaxed">
-                      {data.rules}
-                    </p>
+                  <div className="mt-6 pt-6 border-t border-gray-200">
+                    <div className="flex items-center gap-2 mb-4">
+                      <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <h2 className="text-xl font-bold text-gray-900">Regras da Acomodação</h2>
+                    </div>
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <p className="text-gray-700 whitespace-pre-wrap leading-relaxed text-base">
+                        {data.rules}
+                      </p>
+                    </div>
                   </div>
                 )}
               </div>
@@ -318,11 +310,21 @@ const AnnouncementPage = () => {
               <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
                 <div className="text-center mb-6">
                   <div className="w-16 h-16 bg-gray-200 rounded-full mx-auto mb-3 overflow-hidden">
-                    <div className="w-full h-full bg-gray-300 flex items-center justify-center">
-                      <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
+                    {data.owner?.img_url ? (
+                      <Image
+                        src={data.owner.img_url}
+                        alt={`Foto de ${data.owner.name}`}
+                        width={64}
+                        height={64}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full bg-gray-300 flex items-center justify-center">
+                        <svg className="w-8 h-8 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    )}
                   </div>
                   <h3 className="font-semibold text-gray-900">{data.owner?.name}</h3>
                   <p className="text-sm text-gray-500">Anunciante verificado</p>
@@ -335,13 +337,18 @@ const AnnouncementPage = () => {
                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
                       </svg>
-                      <span className="text-gray-700 font-medium">{data.owner?.phone}</span>
+                      <span className="text-gray-700 font-medium">{formatPhone(data.owner?.phone)}</span>
                     </div>
                     <div className="flex items-center gap-3">
                       <svg className="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                       </svg>
-                      <span className="text-gray-700">{data.owner?.email}</span>
+                      <a
+                        href={`mailto:${data.owner?.email}`}
+                        className="text-gray-700 font-medium hover:underline"
+                      >
+                        {data.owner?.email}
+                      </a>
                     </div>
                   </div>
 
