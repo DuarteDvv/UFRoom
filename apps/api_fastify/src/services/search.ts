@@ -179,7 +179,7 @@ export async function searchRooms(
     price: `R$${room.price} / mês`,
     type: room.type_of === 'individual_room' ? "Quarto Individual" : room.type_of === 'shared_room' ? "Quarto Compartilhado" :  "Kitnet",
     status: room.status === 'available' ? "Disponível" : "Ocupado",
-    image: room.images && room.images.length > 0 ? room.images[0] : "/studio.jpg",
+    image: room.image || "/studio.jpg", 
     vagas: room.open_vac?.toString(),
     sex_restriction: room.sex_restriction,
     near_university: room.universities?.map((u: any) => u.abbreviation) || [],

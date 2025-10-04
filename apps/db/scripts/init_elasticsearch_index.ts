@@ -1,75 +1,116 @@
-
 import { Client } from '@elastic/elasticsearch';
-
 
 const elasticsearch = new Client({
   node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
   auth: {
-    apiKey:'NVpDamQ1a0J5cm1DclRoeEpKUEM6OHcwYTNSanBjNndJYnFNZG0tbEZpQQ=='
+    apiKey: 'INSERIR CHAVE API'
   }
 });
 
+const API_URL = process.env.API_URL || 'http://localhost:3001/announcements';
+const INDEX_NAME = 'announcements';
 
-// Inicializa o índice do Elasticsearch
+async function fetchAnnouncementsFromAPI() {
+  console.log(`📡 Buscando anúncios da API em ${API_URL} ...`);
+  const response = await fetch(API_URL);
+  if (!response.ok) {
+    throw new Error(`Erro ao buscar anúncios da API: ${response.statusText}`);
+  }
+  const data = await response.json();
+  console.log(`✅ ${data.length} anúncios recebidos da API.`);
+  return data;
+}
 
 async function initElasticsearchIndex() {
-
-  const indexName = 'announcements';
-
   try {
-    console.log(`Verificando se o índice "${indexName}" existe...`);
+    console.log(`🔍 Verificando índice "${INDEX_NAME}"...`);
+    const indexExists = await elasticsearch.indices.exists({ index: INDEX_NAME });
 
-    const indexExists = await elasticsearch.indices.exists({ index: indexName });
     if (indexExists) {
-      console.log(`Índice "${indexName}" já existe.`);
-      console.log("Deletando índice existente para recriação...");
-      await elasticsearch.indices.delete({ index: indexName });
-      console.log(`Índice "${indexName}" deletado.`);
-      
+      console.log(`🗑️ Deletando índice existente "${INDEX_NAME}"...`);
+      await elasticsearch.indices.delete({ index: INDEX_NAME });
     }
 
-    console.log(`Índice "${indexName}" não encontrado. Criando...`);
+    console.log(`🆕 Criando índice "${INDEX_NAME}"...`);
+    await elasticsearch.indices.create({
+      index: INDEX_NAME,
+      mappings: {
+        properties: {
+          id: { type: 'integer' },
+          title: { type: 'text' },
+          description: { type: 'text' },
+          price: { type: 'float' },
+          open_vac: { type: 'integer' },
+          rules: { type: 'text' },
+          type_of: { type: 'keyword' },
+          status: { type: 'keyword' },
+          sex_restriction: { type: 'keyword' },
+          location: { type: 'geo_point' },
+          image: { type: 'text' },
+          updated_at: { type: 'date' },
+          owner_name: { type: 'text' },
+        },
+      },
+    });
 
-    // Criar o índice com mapeamento
-    const createIndexResponse = await elasticsearch.indices.create({
-        index: indexName,
-        mappings: {
-          properties: {
-            id: { type: 'integer' },
-            title: { type: 'text' },
-            description: { type: 'text' },
-            price: { type: 'float' },
-            open_vac: { type: 'integer' }, // Vagas disponíveis (calculado: max_occupants - occupants)
-            rules: { type: 'text' },    
-            type_of: { type: 'keyword' },
-            status: { type: 'keyword' },
-            sex_restriction: { type: 'keyword' },
-            location: { type: 'geo_point' }, // Coordenadas geográficas
-            image: { type: 'text' },
-            updated_at: { type: 'date' },
-            universities: {
-                type: 'nested',
-                properties: {
-                    name: { type: 'text' },
-                    abbreviation: { type: 'keyword' }, // Para filtros exatos
-                    distance: { type: 'float' }
-                }
-            },
-          }
+    console.log(`✅ Índice "${INDEX_NAME}" criado com sucesso.`);
+
+    const announcements = await fetchAnnouncementsFromAPI();
+
+    const formattedAnnouncements = announcements.map((a: any) => ({
+      id: a.id,
+      title: a.title,
+      description: a.description,
+      price: parseFloat(a.price),
+      open_vac: a.max_occupants - a.occupants,
+      rules: a.rules,
+      type_of: a.type_of,
+      status: a.status,
+      sex_restriction: a.sex_restriction,
+      location: a.address?.location || { lat: 0, lon: 0 }, // ajustar se houver coordenadas
+      image: a.announcement_img?.find((img: any) => img.is_cover)?.img_url || null,
+      updated_at: a.updated_at,
+      owner_name: a.owner?.name || null,
+    }));
+
+    console.log(`📦 Preparando indexação de ${formattedAnnouncements.length} anúncios...`);
+    const operations: any[] = [];
+
+    for (const a of formattedAnnouncements) {
+      operations.push({ index: { _index: INDEX_NAME, _id: a.id.toString() } });
+      operations.push(a);
+    }
+
+    const bulkResponse = await elasticsearch.bulk({ operations });
+
+    if (bulkResponse.errors) {
+      console.error("⚠️ Ocorreram erros durante a indexação:");
+      bulkResponse.items.forEach((item: any) => {
+        if (item.index?.error) {
+          console.error(` - Documento ${item.index._id}:`, item.index.error);
         }
-      }
-    );
+      });
+    }
 
-    // Verificar se o índice foi criado com sucesso
-    const indexInfo = await elasticsearch.indices.get({ index: indexName });
+    await elasticsearch.indices.refresh({ index: INDEX_NAME });
+    const count = await elasticsearch.count({ index: INDEX_NAME });
+    console.log(`🎉 Indexação concluída! ${count.count} documentos disponíveis.`);
 
-    console.log(`Índice "${indexName}" criado com sucesso. Informações do índice:`, indexInfo);
-    console.log("Propriedades do mapeamento:", JSON.stringify(indexInfo[indexName].mappings, null, 2));
-
-    console.log("Indexação inicial concluída.");
   } catch (error) {
-    console.error(`Erro ao inicializar o índice "${indexName}":`, error);
+    console.error('💥 Erro ao inicializar o Elasticsearch:', error);
   }
 }
 
-initElasticsearchIndex();
+if (require.main === module) {
+  initElasticsearchIndex()
+    .then(() => {
+      console.log('\n🏁 Script finalizado com sucesso!');
+      process.exit(0);
+    })
+    .catch((err) => {
+      console.error('\n❌ Erro fatal:', err);
+      process.exit(1);
+    });
+}
+
+export { initElasticsearchIndex };
