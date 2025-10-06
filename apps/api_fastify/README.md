@@ -36,7 +36,6 @@ docker compose up postgres -d
 
 npx tsx scripts/init_elasticsearch_index.ts
 
-npx tsx scripts/mock_elasticsearch_index.ts
 
 ```
 

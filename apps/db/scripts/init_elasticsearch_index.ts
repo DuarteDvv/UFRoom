@@ -3,7 +3,7 @@ import { Client } from '@elastic/elasticsearch';
 const elasticsearch = new Client({
   node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
   auth: {
-    apiKey: 'MWU3cnVaa0J6ZUlFdEFRWnhyeU06YllUTndkaUIzT3hhcDBSc0xDQ0NCZw=='
+    apiKey: 'NVpDamQ1a0J5cm1DclRoeEpKUEM6OHcwYTNSanBjNndJYnFNZG0tbEZpQQ=='
   }
 });
 
@@ -84,7 +84,8 @@ async function initElasticsearchIndex() {
         name: au.university.name,
         abbreviation: au.university.abbreviation,
         latitude: parseFloat(au.university.latitude),
-        longitude: parseFloat(au.university.longitude)
+        longitude: parseFloat(au.university.longitude), 
+        distance: parseFloat(au.distance)
       })) || []
     }));
 
