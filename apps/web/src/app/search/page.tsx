@@ -484,7 +484,7 @@ export default function RoomListPage() {
            
             {/* Tipo */}
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de quarto</label>
+              <label className="block text-sm font-semibold text-gray-700 mb-1">Tipo de acomodação</label>
               <select
                 name="room_type"
                 value={filters.room_type}
@@ -687,7 +687,12 @@ export default function RoomListPage() {
                   </div>
                 )}
                 <div className="flex justify-end mt-auto">
-                  <button className="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition">Ver detalhes</button>
+                  <button 
+                    onClick={() => router.push(`/announcement/${room.id}`)}
+                    className="bg-red-600 text-white px-4 py-1 rounded-full text-sm font-bold hover:bg-red-700 transition"
+                  >
+                    Ver detalhes
+                  </button>
                 </div>
               </div>
             </div>
