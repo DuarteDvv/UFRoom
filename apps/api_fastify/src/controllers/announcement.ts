@@ -5,6 +5,7 @@ import {
   AnnouncementParamsType,
   AnnouncementUpdateType 
 } from "../schemas/announcement";
+import { AnnouncementImageType } from "../schemas/annoucment_image";
 
 export async function createAnnouncement(
   req: FastifyRequest<{ Body: AnnouncementType }>,
@@ -18,6 +19,22 @@ export async function createAnnouncement(
     return reply.code(201).send(newAnnouncement);
   } catch (error) {
     req.log.error(error, 'Error creating announcement');
+    return reply.code(500).send({ error: 'Internal server error' });
+  }
+}
+
+export async function createAnnouncementImage(
+  req: FastifyRequest<{ Body: AnnouncementImageType }>,
+  reply: FastifyReply
+) {
+  try {
+    const newAnnouncementImage = await AnnouncementService.createAnnouncementImage(
+      req.server, 
+      req.body
+    );
+    return reply.code(201).send(newAnnouncementImage);
+  } catch (error) {
+    req.log.error(error, 'Error creating announcement images');
     return reply.code(500).send({ error: 'Internal server error' });
   }
 }
