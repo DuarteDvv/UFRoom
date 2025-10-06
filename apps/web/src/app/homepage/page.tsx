@@ -193,64 +193,6 @@ export default function Homepage() {
           </div>
         </section>
 
-        {/* How It Works */}
-        <section className="bg-housing-lightPink px-5 md:px-10 py-14">
-          <div className="max-w-7xl mx-auto">
-            <div className="px-6">
-              <div className="mb-5">
-                <h2 className="text-2xl font-bold text-housing-navy mb-1">How It Works</h2>
-                <p className="text-sm font-bold text-housing-gray">Three simple steps to your next home</p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Step 1 */}
-                <div className="bg-white rounded-3xl border border-housing-lightGray p-4.5">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <Search className="h-6 w-6 text-housing-navy" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-housing-navy mb-1.5">Search</h3>
-                      <p className="text-sm font-bold text-housing-gray leading-relaxed">
-                        Filter by location, price, and bedrooms to find the perfect fit.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 2 */}
-                <div className="bg-white rounded-3xl border border-housing-lightGray p-4.5">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <MessageCircle className="h-6 w-6 text-housing-navy" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-housing-navy mb-1.5">Connect</h3>
-                      <p className="text-sm font-bold text-housing-gray leading-relaxed">
-                        Message verified landlords and schedule tours safely.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Step 3 */}
-                <div className="bg-white rounded-3xl border border-housing-lightGray p-4.5">
-                  <div className="flex items-start gap-3">
-                    <div className="flex-shrink-0">
-                      <Key className="h-6 w-6 text-housing-navy" />
-                    </div>
-                    <div>
-                      <h3 className="text-base font-bold text-housing-navy mb-1.5">Move In</h3>
-                      <p className="text-sm font-bold text-housing-gray leading-relaxed">
-                        Sign, pay, and settle in with confidence.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
 
         {/* What Students Say */}
         <section className="bg-white px-5 md:px-10 py-14">
