@@ -82,7 +82,7 @@ export default function SearchBar() {
           className="flex items-center justify-center gap-2 px-5 py-3 bg-red-600 rounded-xl text-white font-bold text-sm hover:bg-red-700 transition-colors min-w-[145px]"
         >
           <Search className="h-4.5 w-4.5" />
-          Search Now
+          Buscar
         </button>
       </div>
     </div>

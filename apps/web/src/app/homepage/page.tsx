@@ -20,7 +20,7 @@ export default function Homepage() {
             <div className="py-18">
               <div className="mb-7">
                 <h1 className="text-4xl md:text-4xl font-bold text-housing-navy mb-4 leading-tight">
-                  Your Perfect Student Home Awaits
+                  O imóvel perfeito te aguarda
                 </h1>
                 <p className="text-base font-bold text-housing-gray max-w-4xl">
                   Encontre o imóvel ideal perto do seu campus.Pesquisa simples, preço transparente e anunciantes confiáveis.
