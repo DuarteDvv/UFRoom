@@ -24,3 +24,53 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+
+:root {
+  --housing-appBg: #F7F7F7;
+  --housing-navy: #1A1F4B;
+  --housing-lightGray: #E2E2E2;
+  --housing-pink: #FFE3E3;
+  --housing-red: #E63946;
+  --housing-lightPink: #FFF0F0;
+  --housing-gray: #888888;
+  --housing-lightBlue: #D0E8FF;
+  --housing-darkBlue: #023E8A;
+}
+
+.bg-housing-appBg { background-color: var(--housing-appBg); }
+.text-housing-navy { color: var(--housing-navy); }
+.border-housing-lightGray { border-color: var(--housing-lightGray); }
+.bg-housing-pink { background-color: var(--housing-pink); }
+.bg-housing-red { background-color: var(--housing-red); }
+.bg-housing-lightPink { background-color: var(--housing-lightPink); }
+.text-housing-gray { color: var(--housing-gray); }
+.bg-housing-lightBlue { background-color: var(--housing-lightBlue); }
+.text-housing-darkBlue { color: var(--housing-darkBlue); }
