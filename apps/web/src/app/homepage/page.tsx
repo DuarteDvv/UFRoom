@@ -219,7 +219,9 @@ export default function Homepage() {
             <div className="flex flex-col md:flex-row justify-between items-start gap-8">
               {/* Logo and Social */}
               <div className="flex flex-col items-start">
-                <div className="text-xl font-bold text-housing-navy mb-4">UFROOM</div>
+                <div className="flex-shrink-0">
+                            <Image src="/logo.png" alt="Logo" width={120} height={120} />
+                  </div>
                 <div className="flex items-center gap-2.5">
                   <Twitter className="h-5 w-5 text-housing-navy" />
                   <Instagram className="h-5 w-5 text-housing-navy" />
