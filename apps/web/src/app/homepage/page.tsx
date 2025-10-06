@@ -22,8 +22,8 @@ export default function Homepage() {
                 <h1 className="text-4xl md:text-4xl font-bold text-housing-navy mb-4 leading-tight">
                   Your Perfect Student Home Awaits
                 </h1>
-                <p className="text-base font-bold text-housing-gray max-w-3xl">
-                  Browse verified housing near your campus. Simple search, transparent pricing, and trusted landlords.
+                <p className="text-base font-bold text-housing-gray max-w-4xl">
+                  Encontre o imóvel ideal perto do seu campus.Pesquisa simples, preço transparente e anunciantes confiáveis.
                 </p>
               </div>
 
