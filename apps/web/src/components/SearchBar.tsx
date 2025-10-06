@@ -15,8 +15,8 @@ export default function SearchBar() {
   const handleSearch = () => {
     const query = new URLSearchParams({
       location,
-      price,
-      bedrooms,
+      max_price: price,   
+      open_vac: bedrooms, 
     }).toString();
 
     router.push(`/search?${query}`);
@@ -47,7 +47,7 @@ export default function SearchBar() {
           <div className="flex items-center gap-2.5 p-3.5 border border-gray-300 rounded-xl bg-white">
             <DollarSign className="h-4.5 w-4.5 text-gray-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-gray-500 mb-1">Price Range</div>
+              <div className="text-xs font-bold text-gray-500 mb-1">Preço Máximo</div>
               <input 
                 type="text"
                 placeholder="$500 - $1,500"
@@ -64,7 +64,7 @@ export default function SearchBar() {
           <div className="flex items-center gap-2.5 p-3.5 border border-gray-300 rounded-xl bg-white">
             <Bed className="h-4.5 w-4.5 text-gray-500 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold text-gray-500 mb-1">Bedrooms</div>
+              <div className="text-xs font-bold text-gray-500 mb-1">Quartos</div>
               <input 
                 type="text"
                 placeholder="Studio, 1, 2+"
