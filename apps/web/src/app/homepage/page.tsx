@@ -18,7 +18,7 @@ export default function Homepage() {
           <div className="max-w-7xl mx-auto">
             <div className="py-18">
               <div className="mb-7">
-                <h1 className="text-4xl md:text-5xl font-bold text-housing-navy mb-4 leading-tight">
+                <h1 className="text-4xl md:text-4xl text-housing-navy mb-4 leading-tight">
                   Your Perfect Student Home Awaits
                 </h1>
                 <p className="text-base font-bold text-housing-gray max-w-3xl">
@@ -72,13 +72,6 @@ export default function Homepage() {
                     Search Now
                   </button>
                 </div>
-              </div>
-
-              {/* Popular Searches */}
-              <div className="mt-1.5">
-                <p className="text-sm font-bold text-housing-gray">
-                  Popular near you: Downtown • University District • West End
-                </p>
               </div>
             </div>
           </div>
