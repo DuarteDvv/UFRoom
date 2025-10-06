@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useAuth } from "../../global-contexts/authcontext";
 import { MapPin, DollarSign, Bed, Search, MessageCircle, Key, Twitter, Instagram, Facebook } from "lucide-react";
 import Header from '../../components/Header';
+import SearchBar from '../../components/SearchBar';
 
 export default function Homepage() {
   return (
@@ -18,7 +19,7 @@ export default function Homepage() {
           <div className="max-w-7xl mx-auto">
             <div className="py-18">
               <div className="mb-7">
-                <h1 className="text-4xl md:text-4xl text-housing-navy mb-4 leading-tight">
+                <h1 className="text-4xl md:text-4xl font-bold text-housing-navy mb-4 leading-tight">
                   Your Perfect Student Home Awaits
                 </h1>
                 <p className="text-base font-bold text-housing-gray max-w-3xl">
@@ -27,51 +28,8 @@ export default function Homepage() {
               </div>
 
               {/* Search Form */}
-              <div className="bg-white rounded-3xl border border-housing-lightGray shadow-lg p-3.5">
-                <div className="flex flex-col md:flex-row gap-3">
-                  {/* Location Input */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 p-3.5 border border-housing-lightGray rounded-xl bg-white">
-                      <MapPin className="h-4.5 w-4.5 text-housing-gray flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-housing-gray mb-1">Location</div>
-                        <input 
-                          type="text" 
-                          placeholder="Enter location" 
-                          className="w-full text-sm font-medium text-housing-navy placeholder-housing-gray bg-transparent border-0 p-0 focus:outline-none"
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price Range */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 p-3.5 border border-housing-lightGray rounded-xl bg-white">
-                      <DollarSign className="h-4.5 w-4.5 text-housing-gray flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-housing-gray mb-1">Price Range</div>
-                        <div className="text-sm font-bold text-housing-navy">$500 - $1,500</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Bedrooms */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2.5 p-3.5 border border-housing-lightGray rounded-xl bg-white">
-                      <Bed className="h-4.5 w-4.5 text-housing-gray flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold text-housing-gray mb-1">Bedrooms</div>
-                        <div className="text-sm font-bold text-housing-navy">Studio, 1, 2+</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Search Button */}
-                  <button className="flex items-center justify-center gap-2 px-5 py-3 bg-housing-red border border-housing-blue rounded-xl text-white font-bold text-sm hover:bg-red-700 transition-colors min-w-[145px]">
-                    <Search className="h-4.5 w-4.5" />
-                    Search Now
-                  </button>
-                </div>
+              <div>
+                <SearchBar />
               </div>
             </div>
           </div>
