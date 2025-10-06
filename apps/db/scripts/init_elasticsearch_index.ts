@@ -49,8 +49,18 @@ async function initElasticsearchIndex() {
           image: { type: 'text' },
           updated_at: { type: 'date' },
           owner_name: { type: 'text' },
-        },
-      },
+          universities: {
+            type: 'nested',
+            properties: {
+              id: { type: 'integer' },
+              name: { type: 'text' },
+              abbreviation: { type: 'keyword' },
+              latitude: { type: 'float' },
+              longitude: { type: 'float' }
+            }
+          }
+        }
+      }
     });
 
     console.log(`✅ Índice "${INDEX_NAME}" criado com sucesso.`);
@@ -67,10 +77,17 @@ async function initElasticsearchIndex() {
       type_of: a.type_of,
       status: a.status,
       sex_restriction: a.sex_restriction,
-      location: a.address?.location || { lat: 0, lon: 0 }, // ajustar se houver coordenadas
+      location: a.address?.location || { lat: 0, lon: 0 },
       image: a.announcement_img?.find((img: any) => img.is_cover)?.img_url || null,
       updated_at: a.updated_at,
       owner_name: a.owner?.name || null,
+      universities: a.announcement_university?.map((au: any) => ({
+        id: au.university.id,
+        name: au.university.name,
+        abbreviation: au.university.abbreviation,
+        latitude: parseFloat(au.university.latitude),
+        longitude: parseFloat(au.university.longitude)
+      })) || []
     }));
 
     console.log(`📦 Preparando indexação de ${formattedAnnouncements.length} anúncios...`);

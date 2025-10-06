@@ -295,7 +295,7 @@ const AnnouncementPage = () => {
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-4m-5 0H3m2 0h4M9 7h6m-6 4h6m-6 4h6" />
                             </svg>
                           </div>
-                          <span className="font-medium text-gray-900">{uni.name}</span>
+                          <span className="font-medium text-gray-900">{uni.university.name}</span>
                         </div>
                         <span className="text-sm text-gray-600 font-medium">{uni.distance.toFixed(1)} km</span>
                       </div>

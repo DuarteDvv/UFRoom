@@ -38,6 +38,11 @@ export async function getAnnouncements(server: FastifyInstance) {
       },
       announcement_img: {
         take: 1
+      },
+      announcement_university: {
+        include: {
+          university: true
+        }
       }
     },
     orderBy: {
@@ -45,6 +50,7 @@ export async function getAnnouncements(server: FastifyInstance) {
     }
   });
 }
+
 
 export async function getAnnouncementById(
   server: FastifyInstance,
