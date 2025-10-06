@@ -52,13 +52,11 @@ async function initElasticsearchIndex() {
           universities: {
             type: 'nested',
             properties: {
-              id: { type: 'integer' },
-              name: { type: 'text' },
-              abbreviation: { type: 'keyword' },
-              latitude: { type: 'float' },
-              longitude: { type: 'float' }
+                name: { type: 'text' },
+                abbreviation: { type: 'keyword' }, // Para filtros exatos
+                distance: { type: 'float' }
             }
-          }
+          },
         }
       }
     });
