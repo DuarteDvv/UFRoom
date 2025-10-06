@@ -91,3 +91,5 @@ temp/
 
 /generated/prisma
 *apps/db/elastic-start-local*
+apps/api_fastify/src/plugins/elasticsearch.ts
+apps/api_fastapi/venv/pyvenv.cfg
