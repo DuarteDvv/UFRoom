@@ -30,8 +30,6 @@ export const Announcement = Type.Object({
   status: AnnouncementStatus,
   title: Type.String({ maxLength: 255 }),
   sex_restriction: SexRestrict,
-  created_at: Type.String({ format: 'date-time' }),
-  updated_at: Type.String({ format: 'date-time' }),
   rules: Type.Optional(Type.String())
 })
 

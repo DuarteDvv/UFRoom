@@ -4,13 +4,15 @@ import {
   getAnnouncements, 
   getAnnouncementById,
   updateAnnouncement,
-  deleteAnnouncement 
+  deleteAnnouncement, 
+  createAnnouncementImage
 } from "../controllers/announcement";
 import { 
   Announcement, 
   AnnouncementParams,
   AnnouncementUpdate 
 } from "../schemas/announcement";
+import { AnnouncementImageResponse } from "../schemas/annoucment_image";
 
 export default async function announcementRoutes(fastify: FastifyInstance) {
   // Create announcement
@@ -22,6 +24,16 @@ export default async function announcementRoutes(fastify: FastifyInstance) {
       },
     },
     createAnnouncement
+  );
+
+  fastify.post(
+    "/announcement-images",
+    {
+      schema: {
+        body: AnnouncementImageResponse,
+      },
+    },
+    createAnnouncementImage
   );
 
   fastify.get("/announcements", getAnnouncements);

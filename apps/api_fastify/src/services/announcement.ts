@@ -3,6 +3,7 @@ import {
   AnnouncementType, 
   AnnouncementUpdateType 
 } from "../schemas/announcement";
+import { AnnouncementImageType } from "../schemas/annoucment_image";
 
 export async function createAnnouncement(
   server: FastifyInstance, 
@@ -22,6 +23,18 @@ export async function createAnnouncement(
           name: true,
         }
       }
+    }
+  });
+}
+
+export async function createAnnouncementImage(
+  server: FastifyInstance,
+  data: AnnouncementImageType
+) {
+  return server.prisma.announcement_img.create({
+    data: {
+      ...data,
+      entry_at: new Date()
     }
   });
 }
