@@ -1,10 +1,10 @@
-# UML Diagrams
+# Diagramas do Projeto UFRoom
 
 Este documento contém dois diagramas UML que representam as principais partes do sistema backend desenvolvido com Fastify.
 
 ---
 
-## 📘 Diagrama de Classes
+## 1. Diagrama de Classes
 
 ```mermaid
 classDiagram
@@ -43,7 +43,7 @@ classDiagram
         +getAllUniversities(req, reply)
     }
 
-    %% Serviços (camada de lógica)
+    %% Serviços
     class AddressService
     class AnnouncementService
     class AuthService
@@ -60,26 +60,3 @@ classDiagram
     OwnerController --> OwnerService
     SearchController --> SearchService
     UniversityController --> UniversityService
-
-# Diagramas do Projeto UFRoom
-
-## 1. Diagrama de Casos de Uso
-
-```mermaid
-%% Casos de uso do UFRoom
-usecaseDiagram
-actor "Usuário" as User
-actor "Proprietário" as Owner
-
-User --> (Registrar conta)
-User --> (Login)
-User --> (Buscar anúncios)
-User --> (Visualizar anúncio)
-User --> (Ver universidades)
-User --> (Usar autocomplete de busca)
-
-Owner --> (Login de proprietário)
-Owner --> (Criar anúncio)
-Owner --> (Editar anúncio)
-Owner --> (Excluir anúncio)
-
