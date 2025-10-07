@@ -7,7 +7,7 @@ import { useAuth } from "../global-contexts/authcontext";
 export default function Header() {
   const navLinks = [
     { name: 'Página Inicial', href: '/homepage' },
-    { name: 'Anuncie sua propriedade', href: '/login' },
+    { name: 'Anuncie sua propriedade', href: '/register-announcement' },
     { name: 'FAQ', href: '/faq' },
   ];
 

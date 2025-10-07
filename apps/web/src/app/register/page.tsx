@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
-
-
 export default function SignUpPage() {
   const router = useRouter();
   const [form, setForm] = useState({
@@ -18,6 +16,8 @@ export default function SignUpPage() {
   });
   const [step, setStep] = useState(1);
   const [error, setError] = useState("");
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isFormValid = form.email.includes("@") && form.password.length >= 6;
 
@@ -77,9 +77,13 @@ export default function SignUpPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (form.password !== form.confirmPassword) {
-      alert("As senhas não conferem!");
+      setError("As senhas não conferem!");
       return;
     }
+
+    setIsSubmitting(true);
+    setError("");
+
     try {
       const payload = {
         name: form.name,
@@ -95,35 +99,41 @@ export default function SignUpPage() {
         },
         body: JSON.stringify(payload),
       });
+      
       if (!res.ok) {
         const errorData = await res.json();
 
-        if (res.status === 400 ) {
-
+        if (res.status === 400) {
           if (errorData.message === "body/name must NOT have fewer than 3 characters") {
             setError("O nome deve ter pelo menos 3 caracteres.");
-          } 
-          else{
+          } else {
             setError(errorData.error);
           }
-          
         }
 
         if (res.status === 500) {
           setError("Erro no servidor. Tente novamente mais tarde.");
         }
         
+        setIsSubmitting(false);
         return;
       }
+
       const data = await res.json();
-      setError(""); // Limpa a mensagem de erro em caso de sucesso
-      alert("Usuário cadastrado com sucesso! Faça login para continuar.");
-      router.push("/login");
       console.log(data);
-    } 
-    catch (err) {
+      
+      // Mostra o modal de sucesso
+      setShowSuccessModal(true);
+      
+      // Redireciona após 3 segundos
+      setTimeout(() => {
+        router.push("/login");
+      }, 3000);
+
+    } catch (err) {
       console.error(err);
-      alert("Erro na requisição");
+      setError("Erro na requisição. Verifique sua conexão.");
+      setIsSubmitting(false);
     }
   };
 
@@ -136,7 +146,7 @@ export default function SignUpPage() {
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-800">
           Criar Conta
         </h1>
-        <form onSubmit={step === 1 ? handleNext : handleSubmit} className="space-y-4">
+        <div className="space-y-4">
           {step === 1 && (
             <>
               <input
@@ -168,7 +178,7 @@ export default function SignUpPage() {
                 required
               />
               <button
-                type="submit"
+                onClick={handleNext}
                 className="w-full bg-red-600 text-white font-semibold p-3 rounded-lg hover:bg-red-700 transition"
               >
                 Continuar
@@ -206,30 +216,36 @@ export default function SignUpPage() {
               />
               <div className="flex gap-2">
                 <button
-                  type="button"
                   onClick={handleBack}
                   className="w-full bg-gray-300 text-gray-700 font-semibold p-3 rounded-lg hover:bg-gray-400 transition"
+                  disabled={isSubmitting}
                 >
                   Voltar
                 </button>
                 <button
-                  type="submit"
-                  className={`w-full bg-red-600 text-white font-semibold p-3 rounded-lg transition hover:bg-red-700
-                        ${!isFormValid ? "bg-gray-400 cursor-not-allowed opacity-80" : ""}`}
-                  disabled={!isFormValid}
+                  onClick={handleSubmit}
+                  className={`w-full bg-red-600 text-white font-semibold p-3 rounded-lg transition hover:bg-red-700 flex items-center justify-center gap-2
+                    ${(!isFormValid || isSubmitting) ? "bg-gray-400 cursor-not-allowed opacity-80" : ""}`}
+                  disabled={!isFormValid || isSubmitting}
                 >
-
-                  Cadastrar
+                  {isSubmitting ? (
+                    <>
+                      <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+                      Cadastrando...
+                    </>
+                  ) : (
+                    "Cadastrar"
+                  )}
                 </button>
               </div>
               {error && (
-                        <div className="text-yellow-600 text-sm text-center mt-0">
-                            {error}
-                        </div>
-                    )}
+                <div className="bg-red-50 border-l-4 border-red-500 p-3 rounded">
+                  <p className="text-red-700 text-sm">{error}</p>
+                </div>
+              )}
             </>
           )}
-        </form>
+        </div>
         <p className="text-center text-gray-600 text-sm mt-6">
           Já tem conta?{" "}
           <a href="/login" className="text-red-600 font-semibold hover:underline">
@@ -237,8 +253,18 @@ export default function SignUpPage() {
           </a>
         </p>
       </div>
+
+      {/* Notificação de Sucesso */}
+      {showSuccessModal && (
+        <div className="fixed top-4 right-4 z-50">
+          <div className="bg-green-500 text-white px-6 py-4 rounded-lg shadow-lg flex items-center gap-3">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            <span className="font-medium">Usuário cadastrado com sucesso!</span>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
-
-   
