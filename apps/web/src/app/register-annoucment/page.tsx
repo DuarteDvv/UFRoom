@@ -275,7 +275,7 @@ export default function CriarAnuncio() {
         {/* Etapa Indicators */}
         <div className="flex gap-4 mb-6">
           {[1, 2, 3].map(s => (
-            <div key={s} className={`flex-1 py-2 text-center font-semibold rounded ${step === s ? "bg-red-600 text-white" : "bg-gray-200"}`}>
+            <div key={s} className={`flex-1 py-2 text-center font-semibold rounded ${step === s ? "bg-red-600 text-white" : "bg-gray-200 text-black"}`}>
               Etapa {s}
             </div>
           ))}
@@ -296,7 +296,7 @@ export default function CriarAnuncio() {
                     name={field}
                     value={(endereco as any)[field]}
                     onChange={handleChange}
-                    className="w-full p-3 border border-gray-300 rounded-lg"
+                    className="w-full p-3 border border-gray-300 rounded-lg text-black"
                     required={["rua","numero","cidade","estado"].includes(field)}
                   />
                 </div>
@@ -309,29 +309,29 @@ export default function CriarAnuncio() {
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Título</label>
-                <input type="text" name="titulo" value={form.titulo} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" required />
+                <input type="text" name="titulo" value={form.titulo} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black" required />
               </div>
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Descrição</label>
-                <textarea name="descricao" value={form.descricao} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg h-32 resize-vertical" required />
+                <textarea name="descricao" value={form.descricao} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg h-32 resize-vertical text-black" required />
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">Preço (R$)</label>
-                  <input type="number" name="preco" value={form.preco} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" step="0.01" min="0" required />
+                  <input type="number" name="preco" value={form.preco} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black" step="0.01" min="0" required />
                 </div>
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">Ocupantes</label>
-                  <input type="number" name="occupants" value={form.occupants} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" min="1" />
+                  <input type="number" name="occupants" value={form.occupants} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black" min="1" />
                 </div>
                 <div>
                   <label className="block text-gray-700 mb-2 font-medium">Máximo de ocupantes</label>
-                  <input type="number" name="max_ocupantes" value={form.max_ocupantes} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg" min="1" />
+                  <input type="number" name="max_ocupantes" value={form.max_ocupantes} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black" min="1" />
                 </div>
               </div>
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Restrição de sexo</label>
-                <select name="restricao_sexo" value={form.restricao_sexo} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg">
+                <select name="restricao_sexo" value={form.restricao_sexo} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black">
                   <option value="both">Ambos</option>
                   <option value="male">Masculino</option>
                   <option value="female">Feminino</option>
@@ -339,7 +339,7 @@ export default function CriarAnuncio() {
               </div>
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Status</label>
-                <select name="status" value={form.status} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg">
+                <select name="status" value={form.status} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black">
                   <option value="available">Disponível</option>
                   <option value="rented">Alugado</option>
                   <option value="paused">Pausado</option>
@@ -347,7 +347,7 @@ export default function CriarAnuncio() {
               </div>
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Tipo imóvel</label>
-                <select name="type_of" value={form.type_of} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg">
+                <select name="type_of" value={form.type_of} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg text-black">
                   <option value="kitnet">Kitnet</option>
                   <option value="individual_room">Quarto Individual</option>
                   <option value="shared_room">Quarto Compartilhado</option>
@@ -355,7 +355,7 @@ export default function CriarAnuncio() {
               </div>
               <div>
                 <label className="block text-gray-700 mb-2 font-medium">Regras da casa</label>
-                <textarea name="regras" value={form.regras} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg h-24 resize-vertical" />
+                <textarea name="regras" value={form.regras} onChange={handleChange} className="w-full p-3 border border-gray-300 rounded-lg h-24 resize-vertical text-black" />
               </div>
             </div>
           )}
