@@ -60,3 +60,11 @@ classDiagram
     OwnerController --> OwnerService
     SearchController --> SearchService
     UniversityController --> UniversityService
+
+    ```mermaid
+    usecaseDiagram
+    actor "Usuário" as User
+    actor "Proprietário" as Owner
+    User --> (Registrar conta)
+    User --> (Login)
+    %% resto do diagrama de casos de uso...
