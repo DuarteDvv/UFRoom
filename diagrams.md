@@ -65,18 +65,15 @@ classDiagram
 ## 1. Diagrama de Casos de Uso
 ```mermaid
    
-    usecaseDiagram
-    actor "Usuário" as User
-    actor "Proprietário" as Owner
-    
-    User --> (Registrar conta)
-    User --> (Login)
-    User --> (Buscar anúncios)
-    User --> (Visualizar anúncio)
-    User --> (Ver universidades)
-    User --> (Usar autocomplete de busca)
-    
-    Owner --> (Login de proprietário)
-    Owner --> (Criar anúncio)
-    Owner --> (Editar anúncio)
-    Owner --> (Excluir anúncio)
+    flowchart TB
+    User["Usuário"] --> RC[Registrar conta]
+    User --> LI[Login]
+    User --> BA[Buscar anúncios]
+    User --> VA[Visualizar anúncio]
+    User --> VU[Ver universidades]
+    User --> AU[Usar autocomplete de busca]
+
+    Owner["Proprietário"] --> LO[Login de proprietário]
+    Owner --> CA[Criar anúncio]
+    Owner --> EA[Editar anúncio]
+    Owner --> DA[Excluir anúncio]
