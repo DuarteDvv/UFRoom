@@ -60,11 +60,23 @@ classDiagram
     OwnerController --> OwnerService
     SearchController --> SearchService
     UniversityController --> UniversityService
+```
 
-    ```mermaid
+## 1. Diagrama de Casos de Uso
+```mermaid
+   
     usecaseDiagram
     actor "Usuário" as User
     actor "Proprietário" as Owner
+    
     User --> (Registrar conta)
     User --> (Login)
-    %% resto do diagrama de casos de uso...
+    User --> (Buscar anúncios)
+    User --> (Visualizar anúncio)
+    User --> (Ver universidades)
+    User --> (Usar autocomplete de busca)
+    
+    Owner --> (Login de proprietário)
+    Owner --> (Criar anúncio)
+    Owner --> (Editar anúncio)
+    Owner --> (Excluir anúncio)
