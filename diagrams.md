@@ -62,7 +62,7 @@ classDiagram
     UniversityController --> UniversityService
 ```
 
-## 1. Diagrama de Casos de Uso
+## 2. Diagrama de Casos de Uso
 ```mermaid
    
     flowchart TB
