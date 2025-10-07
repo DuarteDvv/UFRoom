@@ -90,7 +90,7 @@ export default function LoginPage() {
             setErrorMessage(""); // Limpa a mensagem de erro em caso de sucesso
 
             await login(data.user, data.access_token );
-            router.push("/search");
+            router.push("/homepage");
             console.log(data);
         } 
         catch (err) {

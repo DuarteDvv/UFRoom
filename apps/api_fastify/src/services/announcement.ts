@@ -3,6 +3,7 @@ import {
   AnnouncementType, 
   AnnouncementUpdateType 
 } from "../schemas/announcement";
+import { AnnouncementImageType } from "../schemas/annoucment_image";
 
 export async function createAnnouncement(
   server: FastifyInstance, 
@@ -26,6 +27,18 @@ export async function createAnnouncement(
   });
 }
 
+export async function createAnnouncementImage(
+  server: FastifyInstance,
+  data: AnnouncementImageType
+) {
+  return server.prisma.announcement_img.create({
+    data: {
+      ...data,
+      entry_at: new Date()
+    }
+  });
+}
+
 export async function getAnnouncements(server: FastifyInstance) {
   return server.prisma.announcement.findMany({
     include: {
@@ -38,6 +51,11 @@ export async function getAnnouncements(server: FastifyInstance) {
       },
       announcement_img: {
         take: 1
+      },
+      announcement_university: {
+        include: {
+          university: true
+        }
       }
     },
     orderBy: {
@@ -45,6 +63,7 @@ export async function getAnnouncements(server: FastifyInstance) {
     }
   });
 }
+
 
 export async function getAnnouncementById(
   server: FastifyInstance,

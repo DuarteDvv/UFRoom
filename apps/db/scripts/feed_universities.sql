@@ -19,8 +19,8 @@ INSERT INTO university (name, abbreviation, latitude, longitude) VALUES
 ('Universidade do Estado do Rio de Janeiro', 'UERJ', -22.9119, -43.2364),
 ('Pontifícia Universidade Católica do Rio de Janeiro', 'PUC-Rio', -22.9792, -43.2331),
 ('Universidade Federal Rural do Rio de Janeiro', 'UFRRJ', -22.7617, -43.6847),
-('Universidade Federal de Minas Gerais', 'UFMG-Centro', -19.9257, -43.9366),
-('Universidade Federal de Minas Gerais', 'UFMG-Pampulha', -19.8719, -43.9625),
+('Universidade Federal de Minas Gerais - Campus Centro', 'UFMG-Centro', -19.9257, -43.9366),
+('Universidade Federal de Minas Gerais - Campus Pampulha', 'UFMG-Pampulha', -19.8719, -43.9625),
 ('Universidade Federal de Viçosa', 'UFV', -20.7622, -42.8722),
 ('Universidade Federal de Uberlândia', 'UFU', -18.9189, -48.2578),
 ('Universidade Federal de Juiz de Fora', 'UFJF', -21.7806, -43.3672),
@@ -248,6 +248,38 @@ VALUES
 (20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/4.png', 3, false),
 (20, 'https://storage.googleapis.com/ufroom-b774b.firebasestorage.app/quartos/13/5.png', 4, false);
 
+TRUNCATE TABLE announcement_university RESTART IDENTITY CASCADE;
+
+INSERT INTO announcement_university (id_announcement, id_university, distance) VALUES
+(1, 13, 1.2),  -- UFMG-Centro
+(1, 14, 3.0),  -- UFMG-Pampulha
+(2, 13, 0.8),
+(2, 14, 2.5),
+(3, 13, 1.5),
+(3, 14, 2.0),
+(4, 13, 2.1),
+(4, 14, 1.8),
+(5, 13, 0.9),
+(5, 14, 3.2),
+(6, 13, 1.0),
+(6, 14, 2.7),
+(7, 13, 1.3),
+(7, 14, 2.1);
+
+INSERT INTO announcement_university (id_announcement, id_university, distance) VALUES
+(8, 13, 1.0), (8, 14, 2.5),
+(9, 13, 0.7), (9, 14, 2.8),
+(10, 13, 1.4), (10, 14, 3.1),
+(11, 13, 1.2), (11, 14, 2.9),
+(12, 13, 0.9), (12, 14, 2.6),
+(13, 13, 1.5), (13, 14, 2.2),
+(14, 13, 1.3), (14, 14, 2.0),
+(15, 13, 1.1), (15, 14, 2.7),
+(16, 13, 1.2), (16, 14, 2.9),
+(17, 13, 1.0), (17, 14, 3.0),
+(18, 13, 1.3), (18, 14, 2.1),
+(19, 13, 1.4), (19, 14, 2.5),
+(20, 13, 1.2), (20, 14, 2.8);
 
 
 
