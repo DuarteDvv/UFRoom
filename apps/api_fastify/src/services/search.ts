@@ -72,10 +72,37 @@ export async function searchRooms(
   // adicionar query de busca
   if (query) {
     esQuery.body.query.bool.must.push({
-      multi_match: {
-        query: query,
-        fields: ['title^3', 'description^2', 'rules'],
-        fuzziness: 'AUTO'
+      bool: {
+        should: [
+          {
+            multi_match: {
+              query,
+              fields: ['title^4', 'description^2', 'rules'],
+              fuzziness: 'AUTO',
+              operator: 'and' // todas as palavras devem aparecer
+            }
+          },
+          {
+            multi_match: {
+              query,
+              type: "bool_prefix",
+              fields: ['title^4', 'description^2', 'rules'],
+              boost: 2
+            }
+          }
+        ],
+        minimum_should_match: 1
+      }
+    });
+
+    esQuery.body.query.bool.should.push({
+      match_phrase_prefix: {
+        title: {
+          query,
+          boost: 5,
+          max_expansions: 50,
+          slop: 1
+        }
       }
     });
   } 
