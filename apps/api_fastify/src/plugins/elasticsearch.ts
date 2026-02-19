@@ -7,7 +7,8 @@ export default fp(async (server: FastifyInstance) => {
     const elastic_client = new Client({ 
         node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
         auth: {
-            apiKey: process.env.ES_LOCAL_API_KEY || ''
+            username: 'elastic',
+            password: process.env.ELASTICSEARCH_PASSWORD || 'hqBC2u2N'
         }
     });
 

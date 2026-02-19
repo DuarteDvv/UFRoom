@@ -1,4 +1,4 @@
-FROM postgres
+FROM postgres:16
 
 # variaveis de ambiente do container s
 ENV POSTGRES_USER=ufroomUser

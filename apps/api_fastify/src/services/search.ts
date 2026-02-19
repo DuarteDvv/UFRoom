@@ -13,7 +13,6 @@ export async function searchRooms(
 
   const { query, filters, pagination } = body;
   
-  // Default pagination values
   const limit = pagination?.limit || 20;
   const cursor = pagination?.cursor;
 
@@ -38,14 +37,12 @@ export async function searchRooms(
 
   console.log('Search Input:', JSON.stringify(body, null, 2));
 
-  // Process cursor for pagination
   if (cursor) {
     try {
       const decodedCursor = JSON.parse(Buffer.from(cursor, 'base64').toString());
       esQuery.body.search_after = decodedCursor;
     } catch (error) {
       console.error('Invalid cursor format:', error);
-      // Continue without cursor if invalid
     }
   }
 
@@ -55,7 +52,7 @@ export async function searchRooms(
       term: { 
         "status": { 
           value: "available",
-          boost: 2  // Aumenta a relevância dos anúncios disponíveis
+          boost: 2  
         } 
       },
     },
@@ -63,7 +60,7 @@ export async function searchRooms(
       range: {
         updated_at: {
           gte: "now-30d/d", 
-          boost: 1.5       // Aumenta a relevância dos anúncios mais recentes últimos 30 dias
+          boost: 1.5       
         }
       }
     }
@@ -180,10 +177,9 @@ export async function searchRooms(
 
     // 7. FILTRO DE LOCALIZAÇÃO (buscar os anúncios próximos a uma coordenada)
     if (filters.location_coords && filters.location_coords !== null) {
-      
       esQuery.body.query.bool.filter.push({
         geo_distance: {
-          distance: "20km", // distância máxima (raio)
+          distance: "50km", // distância máxima (raio)
           location: {
             lat: filters.location_coords.lat,
             lon: filters.location_coords.lng
@@ -215,7 +211,6 @@ export async function searchRooms(
 
   console.log('Search Results:', JSON.stringify(rooms_raw, null, 2));
 
-  // Generate next cursor if we have results and they equal the limit (indicating there might be more)
   let nextCursor: string | null = null;
   if (hits.length === limit && hits.length > 0) {
     const lastHit = hits[hits.length - 1];

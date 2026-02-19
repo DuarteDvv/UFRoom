@@ -3,7 +3,8 @@ import { Client } from '@elastic/elasticsearch';
 const elasticsearch = new Client({
   node: process.env.ELASTICSEARCH_URL || 'http://localhost:9200',
   auth: {
-    apiKey: 'NVpDamQ1a0J5cm1DclRoeEpKUEM6OHcwYTNSanBjNndJYnFNZG0tbEZpQQ=='
+    username: 'elastic',
+    password: process.env.ELASTICSEARCH_PASSWORD || 'hqBC2u2N'
   }
 });
 
@@ -65,29 +66,40 @@ async function initElasticsearchIndex() {
 
     const announcements = await fetchAnnouncementsFromAPI();
 
-    const formattedAnnouncements = announcements.map((a: any) => ({
-      id: a.id,
-      title: a.title,
-      description: a.description,
-      price: parseFloat(a.price),
-      open_vac: a.max_occupants - a.occupants,
-      rules: a.rules,
-      type_of: a.type_of,
-      status: a.status,
-      sex_restriction: a.sex_restriction,
-      location: a.address?.location || { lat: 0, lon: 0 },
-      image: a.announcement_img?.find((img: any) => img.is_cover)?.img_url || null,
-      updated_at: a.updated_at,
-      owner_name: a.owner?.name || null,
-      universities: a.announcement_university?.map((au: any) => ({
-        id: au.university.id,
-        name: au.university.name,
-        abbreviation: au.university.abbreviation,
-        latitude: parseFloat(au.university.latitude),
-        longitude: parseFloat(au.university.longitude), 
-        distance: parseFloat(au.distance)
-      })) || []
-    }));
+    const formattedAnnouncements = announcements.map((a: any) => {
+      // Extrair coordenadas do endereço vinculado
+      let location = { lat: 0, lon: 0 };
+      if (a.address && a.address.latitude && a.address.longitude) {
+        location = {
+          lat: parseFloat(a.address.latitude),
+          lon: parseFloat(a.address.longitude)
+        };
+      }
+      
+      return {
+        id: a.id,
+        title: a.title,
+        description: a.description,
+        price: parseFloat(a.price),
+        open_vac: a.max_occupants - a.occupants,
+        rules: a.rules,
+        type_of: a.type_of,
+        status: a.status,
+        sex_restriction: a.sex_restriction,
+        location: location,
+        image: a.announcement_img?.find((img: any) => img.is_cover)?.img_url || null,
+        updated_at: a.updated_at,
+        owner_name: a.owner?.name || null,
+        universities: a.announcement_university?.map((au: any) => ({
+          id: au.university.id,
+          name: au.university.name,
+          abbreviation: au.university.abbreviation,
+          latitude: parseFloat(au.university.latitude),
+          longitude: parseFloat(au.university.longitude), 
+          distance: parseFloat(au.distance)
+        })) || []
+      };
+    });
 
     console.log(`📦 Preparando indexação de ${formattedAnnouncements.length} anúncios...`);
     const operations: any[] = [];

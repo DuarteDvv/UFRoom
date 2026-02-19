@@ -14,7 +14,7 @@
 **/package-lock.json
 **/yarn.lock
 **/pnpm-lock.yaml
-
+*apps/db/elastic-start-local*
 # Testing
 **/coverage
 
@@ -34,6 +34,9 @@ apps/api/build/
 # Environment files 
 **/.env*
 !**/.env.example
+
+# Firebase credentials (NEVER commit!)
+**/serviceAccountKey.json
 
 # OS files
 .DS_Store
